@@ -1,0 +1,7 @@
+{
+  "name": "MPPF-App",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "angular-standalone"
+}
