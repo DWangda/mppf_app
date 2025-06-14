@@ -7,7 +7,23 @@ export const routes: Routes = [
   },
   {
     path: '',
-    redirectTo: 'home',
+    redirectTo: 'term-of-service',
     pathMatch: 'full',
+  },
+
+  {
+    path: 'login',
+    loadComponent: () => import('./login/login.page').then((m) => m.LoginPage),
+  },
+  {
+    path: 'term-of-service',
+    loadComponent: () =>
+      import('./term-of-service/term-of-service.page').then(
+        (m) => m.TermOfServicePage
+      ),
+  },
+  {
+    path: 'about',
+    loadComponent: () => import('./about/about.page').then( m => m.AboutPage)
   },
 ];

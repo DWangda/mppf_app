@@ -1,0 +1,61 @@
+ion-content {
+  --background: #5bd1d7; /* Light background color */
+}
+.centered {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  text-align: center;
+  margin-top: 2rem;
+}
+.logo {
+  width: 120px;
+  height: auto;
+}
+.login-text1 {
+  font-size: 1.5rem;
+  font: bold;
+  font-family: "Times New Roman";
+  text-align: center;
+  color: #ffffff;
+  margin: 2px;
+  padding: 0 16px;
+}
+.login-text2 {
+  font-size: 1.5rem;
+  font: bold;
+  font-family: "Times New Roman";
+  text-align: center;
+  color: #333;
+  margin-left: 50px;
+  margin-right: 50px;
+  margin-top: 0;
+}
+.button-group {
+  display: flex;
+  width: 100%;
+  margin-top: 20%;
+  flex-direction: row; /* stack word over logo */
+  justify-content: center; /* vertical centre */
+  align-items: center; /* horizontal centre */
+}
+.button-logo {
+  width: 35px;
+  height: 35px;
+  margin-right: 10px; /* Space between text and logo */
+}
+
+ion-button {
+  --background: transparent;
+  --border-width: 2px;
+  --border-color: #5ac994;
+  color: #ffffff;
+}
+
+/* moment the user is pressing it */
+ion-button:active,           /* raw :active for mouse/touch down */
+ion-button.ion-activated {
+  /* Ionic’s tap-feedback class */
+  --background: #5ac994;
+}

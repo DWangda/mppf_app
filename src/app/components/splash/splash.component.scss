@@ -1,0 +1,51 @@
+/* 1️⃣  make the wrapper fill the viewport and behave as a flex-box */
+.centre-box {
+  width: 100vw; /* full viewport width */
+  height: 100vh; /* full viewport height */
+  display: flex;
+  margin-left: 10px; /* space around the box */
+  margin-right: 10px; /* space around the box */
+  flex-direction: row; /* stack word over logo */
+  justify-content: center; /* vertical centre */
+  align-items: center; /* horizontal centre */
+  gap: 0; /* space between word & logo */
+}
+ion-content {
+  --background: #5bd1d7;
+}
+
+/* 2️⃣  word slides in from left */
+.brand-text {
+  margin: 0;
+  font-size: 1 rem;
+  font-family: "Times New Roman";
+  color: #23a29d;
+  //   font-weight: 600;
+  opacity: 0;
+  transform: translateX(-100%);
+  animation: slideIn 1s cubic-bezier(0.25, 0.8, 0.4, 1) 0.1s forwards;
+}
+
+/* 3️⃣  logo unwinds from 90 ° */
+.brand-logo {
+  width: 90px;
+  margin: 10px;
+  /* tweak size as needed */
+  opacity: 0;
+  transform: rotate(90deg);
+  animation: unwind 0.9s ease-out 0.6s forwards;
+}
+
+/* keyframes */
+@keyframes slideIn {
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+@keyframes unwind {
+  to {
+    transform: rotate(0deg);
+    opacity: 1;
+  }
+}

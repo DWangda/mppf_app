@@ -1,3 +1,11 @@
 <ion-app>
-  <ion-router-outlet></ion-router-outlet>
+  <!-- Only show splash ONCE -->
+  <ng-container *ngIf="webSplash && !hasLoadedSplash; else appContent">
+    <app-splash></app-splash>
+  </ng-container>
+
+  <!-- Rest of app -->
+  <ng-template #appContent>
+    <ion-router-outlet></ion-router-outlet>
+  </ng-template>
 </ion-app>

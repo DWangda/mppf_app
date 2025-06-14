@@ -1,0 +1,51 @@
+.centered {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  text-align: center;
+  margin-top: 2rem;
+}
+
+.logo {
+  width: 120px;
+  height: auto;
+}
+.terms-header {
+  font-size: 1.2rem;
+  color: #5bd1d7;
+  margin-bottom: 1rem;
+}
+.terms-p {
+  font-size: 1rem;
+  text-align: left;
+  color: #333;
+  padding: 0 16px;
+}
+.terms-text {
+  font-size: 1rem;
+  text-align: left;
+  color: #333;
+  margin: 2px;
+  padding: 0 16px;
+}
+ion-content {
+  --background: #f0f0f0; /* Light background for better contrast */
+}
+ion-item {
+  --background: #f0f0f0; /* Light background for better contrast */
+}
+
+.button-group {
+  display: flex;
+  width: 100%;
+  flex-direction: row; /* stack word over logo */
+  justify-content: center; /* vertical centre */
+  align-items: center; /* horizontal centre */
+  flex-direction: row;
+}
+
+.custom-button {
+  --background: #5fb8b4;
+  color: white;
+}
