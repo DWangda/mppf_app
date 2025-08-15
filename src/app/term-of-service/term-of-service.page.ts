@@ -18,7 +18,7 @@ export class TermOfServicePage {
   constructor(private router: Router) {}
 
   goLogin() {
-    this.router.navigate(['/login']);
+    this.router.navigate(['/ndi-login']);
   }
   onAccept() {
     console.log('Terms accepted');
@@ -29,5 +29,8 @@ export class TermOfServicePage {
   onCancel() {
     localStorage.clear();
     App.exitApp(); // 👈 closes the app (Capacitor only)
+  }
+  gotoTest() {
+    this.router.navigate(['/login']);
   }
 }

@@ -1,0 +1,92 @@
+<div class="ion-page" id="main-content">
+  <ion-header style="border: 0; background: transparent" [translucent]="true">
+    <ion-toolbar
+      border="none"
+      style="
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-direction: row;
+      "
+    >
+      <ion-buttons slot="start">
+        <ion-back-button defaultHref="/home"></ion-back-button>
+      </ion-buttons>
+      <ion-title>
+        <img class="logo" src="assets/header-logo.png" alt="logo" />
+      </ion-title>
+      <ion-buttons slot="end">
+        <ion-button disabled="true"> </ion-button>
+        <ion-button disabled="true"> </ion-button>
+      </ion-buttons>
+    </ion-toolbar>
+  </ion-header>
+  <ion-content [fullscreen]="true" class="ion-padding">
+    <div class="profile-container">
+      <div class="detail-header">
+        <p>Your Personal Details</p>
+        <div class="active">
+          <img src="assets/contactIcons/active.svg" alt="icon" />
+          <p>Active</p>
+        </div>
+      </div>
+
+      <div class="details-container">
+        <div class="detail-field">
+          <span class="field-label">Full Name</span>
+          <div class="field-value">{{ fullName }}</div>
+        </div>
+
+        <!-- Phone Field -->
+        <!-- <div class="detail-field">
+          <span class="field-label">Date of Birth</span>
+          <div class="field-value">01-01-2000</div>
+        </div> -->
+
+        <!-- Address Field -->
+        <div class="detail-field">
+          <span class="field-label">ID Number</span>
+          <div class="field-value">{{ cidNumber }}</div>
+        </div>
+      </div>
+      <div class="detail-header"><p>Pensioner Details</p></div>
+      <div class="details-container">
+        <div class="detail-field">
+          <span class="field-label">Pension Status</span>
+          <div class="field-value">{{pensionStatus}}</div>
+        </div>
+
+        <!-- Phone Field -->
+        <div class="detail-field">
+          <span class="field-label">Pension ID</span>
+          <div class="field-value">{{pensionId}}</div>
+        </div>
+
+        <!-- Address Field -->
+        <div class="detail-field">
+          <span class="field-label">Pension Type</span>
+          <div class="field-value">{{pensionType}}</div>
+        </div>
+        <div class="detail-field">
+          <span class="field-label">Pension Acc</span>
+          <div class="field-value">{{pensionAccount}}</div>
+        </div>
+        <div class="detail-field">
+          <span class="field-label">Pension Increment/year</span>
+          <div class="field-value">{{currentYearIncrementPct }}</div>
+        </div>
+        <div class="detail-field">
+          <span class="field-label">Monthly Pension Amount</span>
+          <div class="field-value">Nu. {{monthlyPensionAmount}}</div>
+        </div>
+      </div>
+      <div class="detail-header"><p>Lotedeth Details</p></div>
+      <div class="details-container">
+        <div class="detail-field">
+          <span class="field-label">Lotedeth Member</span>
+          <div class="field-value">{{lotedth}}</div>
+        </div>
+      </div>
+    </div>
+  </ion-content>
+</div>

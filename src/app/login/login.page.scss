@@ -1,5 +1,5 @@
 ion-content {
-  --background: #5bd1d7; /* Light background color */
+  --background: rgb(255, 255, 255); /* Light background color */
 }
 .centered {
   display: flex;
@@ -10,7 +10,7 @@ ion-content {
   margin-top: 2rem;
 }
 .logo {
-  width: 120px;
+  width: 100%;
   height: auto;
 }
 .login-text1 {
@@ -18,7 +18,7 @@ ion-content {
   font: bold;
   font-family: "Times New Roman";
   text-align: center;
-  color: #ffffff;
+  color: #333;
   margin: 2px;
   padding: 0 16px;
 }

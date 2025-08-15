@@ -1,8 +1,12 @@
 <ion-content [fullscreen]="true">
   <div class="centered">
-    <img src="assets/logo.png" class="logo" alt="App Logo" />
+    <img src="assets/logo1.png" class="logo" alt="App Logo" />
     <p class="login-text1">Welcome to</p>
-    <p class="login-text2">Pensioner Livelihood Verification App</p>
+    <p class="login-text2">Pensioner Liveliness Verification App</p>
+    <!-- <p class="login-text2">{{ 'LOGIN.TITLE' | translate }}</p> -->
+
+    <!-- toggle appears on the right of the toolbar -->
+    <app-language-toggle></app-language-toggle>
     <div class="button-group">
       <ion-button
         expand="block"
@@ -16,14 +20,15 @@
           --border-color: #5ac994;
           --padding-top: 0;
           --padding-bottom: 0;
-          color: #ffffff;
+          color: #333;
           display: flex;
           justify-content: center;
           flex-direction: row;
         "
+        (click)="onLogin()"
       >
         <img src="assets/QRlogo.svg" class="button-logo" alt="App Logo" />
-        <p style="font-size: 16px; font: bold">Login with Bhutan NDI</p>
+        <p style="font-size: 18px; font: bold">Login with Bhutan NDI</p>
       </ion-button>
     </div>
   </div>

@@ -1,0 +1,106 @@
+<div class="ion-page" id="main-content">
+  <ion-header style="border: 0; background: transparent" [translucent]="true">
+    <ion-toolbar
+      border="none"
+      style="
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-direction: row;
+      "
+    >
+      <ion-buttons slot="start">
+        <ion-back-button defaultHref="/report"></ion-back-button>
+      </ion-buttons>
+      <ion-title>
+        <img class="logo" src="assets/header-logo.png" alt="logo" />
+      </ion-title>
+      <ion-buttons slot="end">
+        <ion-button disabled="true"> </ion-button>
+        <ion-button disabled="true"> </ion-button>
+      </ion-buttons>
+    </ion-toolbar>
+  </ion-header>
+  <ion-content [fullscreen]="true" class="ion-padding">
+    <div class="ion-page" id="main-content">
+      <!-- ───────── Header ───────── -->
+      <ion-header
+        style="border: 0; background: transparent"
+        [translucent]="true"
+      >
+        <ion-toolbar>
+          <ion-buttons slot="start">
+            <ion-back-button defaultHref="/report"></ion-back-button>
+          </ion-buttons>
+
+          <ion-title>
+            <img class="logo" src="assets/header-logo.png" alt="logo" />
+          </ion-title>
+
+          <ion-buttons slot="end">
+            <ion-button disabled></ion-button>
+            <ion-button disabled></ion-button>
+          </ion-buttons>
+        </ion-toolbar>
+      </ion-header>
+
+      <!-- ───────── Content ───────── -->
+      <ion-content [fullscreen]="true" class="ion-padding">
+        <div class="tds-content">
+          <h2
+            style="
+              font-size: 18px;
+              align-items: center;
+              text-align: center;
+              font-weight: 700;
+              text-decoration: underline;
+            "
+          >
+            Statement
+          </h2>
+
+          <!-- Loading spinner -->
+          <ion-spinner name="crescent" *ngIf="loading"></ion-spinner>
+
+          <!-- No‑data message -->
+          <p *ngIf="!loading && statements.length === 0">
+            No Statement found for this pension ID.
+          </p>
+
+          <!-- Data table -->
+          <div class="table-wrapper" *ngIf="statements.length">
+            <table #tdsTable class="tds-table">
+              <thead>
+                <tr>
+                  <th>Year</th>
+                  <th>Month</th>
+                  <th>Pension Amt</th>
+                  <!-- <th>CPI %</th> -->
+                  <th>Date</th>
+                  <th>Txn Ref</th>
+                </tr>
+              </thead>
+
+              <tbody>
+                <tr *ngFor="let s of statements">
+                  <td>{{ s.taxYear }}</td>
+                  <td>{{ s.monthName.trim() }}</td>
+                  <td>{{ s.monthlyPensionAmount | number }}</td>
+                  <!-- <td>{{ s.cpiAdjustment }}</td> -->
+                  <td>{{ s.paymentDate | date:'yyyy‑MM‑dd' }}</td>
+                  <td>{{ s.transactionReference }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <!-- <div class="export-wrapper" *ngIf="statements.length">
+            <ion-button expand="block" color="primary" (click)="exportPdf()">
+              <ion-icon name="download-outline" slot="start"></ion-icon>
+              Export PDF
+            </ion-button>
+          </div> -->
+        </div>
+      </ion-content>
+    </div>
+  </ion-content>
+</div>

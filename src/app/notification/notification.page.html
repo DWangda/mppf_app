@@ -1,0 +1,44 @@
+<!-- HEADER -- stays the same -->
+<ion-header translucent="true">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/home"></ion-back-button>
+    </ion-buttons>
+
+    <img class="logo" src="assets/header-logo.png" alt="logo" />
+
+    <ion-buttons slot="end">
+      <ion-button disabled style="margin-left: 20px"></ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<!-- CONTENT -->
+<ion-content [fullscreen]="true" class="page-bg">
+  <div class="notification-head">
+    <p class="noti-text">Notification</p>
+  </div>
+
+  <!-- Card list -->
+  <div class="noti-card" *ngFor="let n of notifications; trackBy: trackById">
+    <!-- avatar -->
+    <div class="avatar">
+      {{ getInitials(n.notificationTitle || n.notificationType) }}
+    </div>
+
+    <!-- main body -->
+    <div class="noti-body">
+      <div class="noti-header">
+        <span class="date">{{ formatDate(n.sentDate) }}</span>
+        <!-- <span class="dot" *ngIf="!n.read"></span> -->
+      </div>
+
+      <h3 class="title">{{ n.notificationTitle }}</h3>
+      <p class="message">{{ n.notificationMessage }}</p>
+    </div>
+  </div>
+
+  <ion-item lines="none" class="ion-text-center" *ngIf="!notifications.length">
+    <ion-label>No notifications to show.</ion-label>
+  </ion-item>
+</ion-content>

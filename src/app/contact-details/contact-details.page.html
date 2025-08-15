@@ -1,0 +1,76 @@
+<div class="ion-page" id="main-content">
+  <ion-header style="border: 0; background: transparent" [translucent]="true">
+    <ion-toolbar
+      border="none"
+      style="
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-direction: row;
+      "
+    >
+      <ion-buttons slot="start">
+        <ion-back-button defaultHref="/home"></ion-back-button>
+      </ion-buttons>
+      <ion-title>
+        <img class="logo" src="assets/header-logo.png" alt="logo" />
+      </ion-title>
+      <ion-buttons slot="end">
+        <ion-button disabled="true"> </ion-button>
+        <ion-button disabled="true"> </ion-button>
+      </ion-buttons>
+    </ion-toolbar>
+  </ion-header>
+  <ion-content [fullscreen]="true" class="ion-padding">
+    <div class="profile-container">
+      <div class="detail-header">
+        <p>Contact Details</p>
+        <!-- <div class="active">
+          <img src="assets/contactIcons/edit.svg" alt="icon" />
+          <p>Edit</p>
+        </div> -->
+      </div>
+
+      <div class="details-container">
+        <div class="detail-field">
+          <span class="field-label">Mobile Number</span>
+          <div class="field-value">{{ phoneNumber }}</div>
+        </div>
+
+        <!-- Phone Field -->
+        <div class="detail-field">
+          <span class="field-label">Email</span>
+          <div class="field-value">{{ email }}</div>
+        </div>
+        <div class="detail-header">
+          <p>Present Address</p>
+        </div>
+
+        <!-- Address Field -->
+        <div class="detail-field">
+          <span class="field-label">Dzongkhag</span>
+          <div class="field-value">{{ dzongkhag }}</div>
+        </div>
+        <div class="detail-field">
+          <span class="field-label">Gewog</span>
+          <div class="field-value">{{ gewog }}</div>
+        </div>
+        <div class="detail-field">
+          <span class="field-label">Village</span>
+          <div class="field-value">{{ village }}</div>
+          <!-- <ion-select
+            class="field-value"
+            value="Thimphu"
+            interface="action-sheet"
+          >
+            <ion-select-option value="Thimphu">Thimphu</ion-select-option>
+            <ion-select-option value="Mongar">Mongar</ion-select-option>
+            <ion-select-option value="Haa">Haa</ion-select-option>
+          </ion-select> -->
+        </div>
+
+        <!-- <div class="button"><ion-button>Update</ion-button></div> -->
+      </div>
+    </div>
+  </ion-content>
+</div>

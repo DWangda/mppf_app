@@ -1,0 +1,233 @@
+ion-content {
+  --background: white; /* Light background color */
+}
+.centered {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  text-align: center;
+  //   margin-top: 2rem;
+}
+.logo {
+  width: 120px;
+  height: auto;
+}
+.login-text1 {
+  font-size: 1.5rem;
+  font: bold;
+  font-family: "Times New Roman";
+  text-align: center;
+  color: #ffffff;
+  margin: 2px;
+  padding: 0 16px;
+}
+.login-text2 {
+  font-size: 1.5rem;
+  font: bold;
+  font-family: "Times New Roman";
+  text-align: center;
+  color: #333;
+  margin-left: 50px;
+  margin-right: 50px;
+  margin-top: 0;
+}
+.button-group {
+  display: flex;
+  width: 100%;
+  flex-direction: row; /* stack word over logo */
+  justify-content: center; /* vertical centre */
+  align-items: center; /* horizontal centre */
+}
+.button-logo {
+  width: 35px;
+  height: 35px;
+  margin-right: 30px; /* Space between text and logo */
+}
+
+ion-button {
+  --background: transparent;
+  --border-width: 2px;
+  --border-color: #5ac994;
+  color: #ffffff;
+}
+
+/* moment the user is pressing it */
+ion-button:active,           /* raw :active for mouse/touch down */
+ion-button.ion-activated {
+  /* Ionic’s tap-feedback class */
+  --background: #5ac994;
+}
+.my-qr {
+  display: inline-block;
+  padding: 6px;
+  border-radius: 10px;
+  background: transparent;
+  //   box-shadow: 0 3px 8px rgba(0, 0, 0, 0.12);
+
+  /* reach into the component’s template */
+  ::ng-deep canvas {
+    border-radius: 10px;
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.12);
+    border: 3px solid #5ac994; /* Optional: add a border */
+    width: 100%; /* Make it responsive */
+    height: auto; /* Maintain aspect ratio */
+  }
+}
+.scan-container {
+  margin-top: 30px;
+  padding-top: 30px;
+  background-color: #ffffff;
+  padding-left: 15px;
+  padding-right: 15px;
+  padding-bottom: 15px;
+  border-radius: 10px;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.12);
+  padding-bottom: 30px;
+}
+
+.line-with-text {
+  display: flex;
+  align-items: center;
+  text-align: center;
+  margin: 30px 0;
+
+  span {
+    padding: 0px;
+    color: gray;
+    position: relative;
+  }
+
+  &::before,
+  &::after {
+    content: "";
+    flex: 1;
+    border-bottom: 1.2px solid black;
+  }
+
+  &::before {
+    margin-right: 6px;
+  }
+
+  &::after {
+    margin-left: 6px;
+  }
+  @media (prefers-color-scheme: dark) {
+    &::before,
+    &::after {
+      border-bottom: 1.2px solid white;
+    }
+  }
+}
+.scan-icon {
+  width: 25px;
+  height: 25px;
+}
+/* video‑button.component.scss  ─ or put in global.scss */
+
+.video-guide-btn {
+  /* ------ base (normal) state ------ */
+  --border-radius: 9999px; // full pill
+  --border-width: 2px;
+  --border-color: #28c27d;
+  --background: #28c27d;
+  --color: #28c27d;
+  --padding-start: 24px;
+  --padding-end: 24px;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  margin-top: 30px;
+  gap: 12px;
+  // transition: background-color 0.16s ease, color 0.16s ease;
+
+  /* little circle that holds the play icon */
+  .play-circle {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: 2px solid;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: 10px;
+    transition: background-color 0.16s ease, border-color 0.16s ease;
+
+    img {
+      font-size: 18px;
+      color: #28c27d;
+      border-radius: 50%;
+      background-color: #ffffff;
+      // border: #28c27d solid 2px;
+
+      transition: color 0.16s ease;
+    }
+  }
+
+  /* ------ hover / focus / press ------ */
+}
+ion-toolbar {
+  background: transparent;
+  border-bottom-left-radius: 20px;
+  border-bottom-right-radius: 20px;
+  height: 100px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  display: flex;
+  flex-direction: row;
+  transition: background-color 0.3s ease-in;
+}
+ion-back-button {
+  --color: white; /* Applies to iOS and Android */
+}
+
+ion-title {
+  color: white;
+  font-size: 24px;
+  text-align: center;
+  font-weight: bold;
+}
+ion-header {
+  --background: transparent;
+  --border-color: transparent;
+  --box-shadow: none;
+  --ion-safe-area-top: 0px;
+  --ion-safe-area-bottom: 0px;
+  border-bottom-left-radius: 20px;
+  border-bottom-right-radius: 20px;
+}
+ion-content {
+  --background: #ffffff;
+  --ion-safe-area-top: 0px;
+  --ion-safe-area-bottom: 0px;
+  padding: 0;
+  --align-items: center;
+  --align-content: center;
+  --justify-content: center;
+}
+.card {
+  align-content: center;
+  align-items: center;
+  padding-left: 20px;
+  display: flex;
+  flex-direction: row;
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  margin: 20px;
+  background-color: #ffffff;
+  gap: 20px;
+  img {
+    width: 35px;
+    height: 35px;
+  }
+  h2 {
+    font-size: 18px;
+    color: #333;
+    font-weight: 700;
+  }
+}
+ion-back-button {
+  --color: #5bd1d7;
+  margin: 10px;
+}

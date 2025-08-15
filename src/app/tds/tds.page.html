@@ -1,0 +1,82 @@
+<ion-header style="border: 0; background: transparent" [translucent]="true">
+  <ion-toolbar
+    style="display: flex; justify-content: space-between; align-items: center"
+  >
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/report"></ion-back-button>
+    </ion-buttons>
+    <ion-title>
+      <img class="logo" src="assets/header-logo.png" alt="logo" />
+    </ion-title>
+    <ion-buttons slot="end">
+      <ion-button disabled="true"></ion-button>
+      <ion-button disabled="true"></ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" class="ion-padding">
+  <div class="tds-content">
+    <h2 class="title">TDS Report</h2>
+
+    <!-- User Info -->
+    <!-- <div class="user-info" *ngIf="!loading">
+      <p><strong>Name:</strong> {{ userDetails.name }}</p>
+      <p>
+        <strong>Commencement Date:</strong> {{ userDetails.commencementDate }}
+      </p>
+      <p><strong>Address:</strong> {{ userDetails.address }}</p>
+      <p>
+        <strong>Pension Savings A/c.:</strong> {{ userDetails.accountNumber }}
+      </p>
+      <p><strong>Pension ID No.:</strong> {{ userDetails.pensionId }}</p>
+      <p><strong>TPN No / CID #:</strong> {{ userDetails.cid }}</p>
+    </div> -->
+
+    <!-- Spinner -->
+    <ion-spinner name="crescent" *ngIf="loading"></ion-spinner>
+
+    <!-- No Records -->
+    <p *ngIf="!loading && statements.length === 0">
+      No TDS records found for this pension ID.
+    </p>
+
+    <!-- Table -->
+    <div class="table-wrapper" *ngIf="statements.length">
+      <table #tdsTable class="tds-table">
+        <thead>
+          <tr>
+            <th>Month</th>
+            <th>Gross Pension</th>
+            <th>Arrears</th>
+            <th>Lotedh Cont.</th>
+            <th>Net Pension</th>
+            <th>TDS</th>
+            <th>Receipt Number</th>
+            <th>Receipt Date</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let s of statements">
+            <td>{{ s.monthNameWithDate }}</td>
+            <td>{{ s.grossPension | number }}</td>
+            <td>{{ s.arrear || '-' }}</td>
+            <td>{{ s.lotedthContact || '-' }}</td>
+            <td>{{ s.netPension | number }}</td>
+            <td>{{ s.tds || '-' }}</td>
+            <td>{{ s.receiptNumber || 'NA' }}</td>
+            <td>{{ s.receiptDate || 'NA' }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Export Button -->
+    <div class="export-wrapper" *ngIf="statements.length">
+      <ion-button expand="block" color="primary" (click)="exportPdf()">
+        <ion-icon name="download-outline" slot="start"></ion-icon>
+        Export PDF
+      </ion-button>
+    </div>
+  </div>
+</ion-content>

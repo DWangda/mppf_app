@@ -1,0 +1,39 @@
+<div class="ion-page" id="main-content">
+  <ion-header style="border: 0; background: transparent" [translucent]="true">
+    <ion-toolbar
+      border="none"
+      style="
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-direction: row;
+      "
+    >
+      <ion-buttons slot="start">
+        <ion-back-button defaultHref="/home"></ion-back-button>
+      </ion-buttons>
+      <ion-title>
+        <img class="logo" src="assets/header-logo.png" alt="logo" />
+      </ion-title>
+      <ion-buttons slot="end">
+        <ion-button disabled="true"></ion-button>
+        <ion-button disabled="true"></ion-button>
+      </ion-buttons>
+    </ion-toolbar>
+  </ion-header>
+
+  <ion-content class="ion-padding">
+    <ion-list *ngIf="faqs.length > 0">
+      <ion-item *ngFor="let faq of faqs">
+        <ion-label>
+          <h3>{{ faq.question }}</h3>
+          <p>{{ faq.answer }}</p>
+        </ion-label>
+      </ion-item>
+    </ion-list>
+
+    <div *ngIf="faqs.length === 0" class="ion-padding">
+      <p>No FAQs found.</p>
+    </div>
+  </ion-content>
+</div>

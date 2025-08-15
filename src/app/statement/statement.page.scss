@@ -1,0 +1,29 @@
+/* tds.page.scss */
+.table-wrapper {
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+th,
+td {
+  padding: 0.5rem 0.4rem;
+  text-align: center;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+th {
+  font-weight: 600;
+  white-space: nowrap;
+}
+.export-wrapper {
+  margin-top: 1rem;
+}
+
+ion-button {
+  font-weight: 600;
+}

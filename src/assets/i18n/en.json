@@ -1,0 +1,23 @@
+{
+  "LOGIN": {
+    "TITLE": "Sign In",
+    "WELCOME": "Welcome to",
+    "SUBTITLE": "Pensioner Liveliness Verification App",
+    "BUTTON": "Login with Bhutan NDI"
+  },
+  "USER": {
+    "GREET": "Kuzuzangpo",
+    "TITLE": "User Details",
+    "NAME": "Name",
+    "ID": "ID Number",
+    "DOB": "  Date of Birth།",
+    "CONTACT": "Contact Details",
+    "VIEW": "View Report",
+    "TEST": "Liveliness Test"
+  },
+
+  "SERVICES": {
+    "TITLE": "Services",
+    "SUBTITLE": "Available Services"
+  }
+}

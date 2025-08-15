@@ -1,0 +1,210 @@
+ion-toolbar {
+  background: #5bd1d7;
+  border-bottom-left-radius: 20px;
+  border-bottom-right-radius: 20px;
+  height: 100px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  display: flex;
+  flex-direction: row;
+  transition: background-color 0.3s ease-in;
+}
+ion-back-button {
+  --color: #17a69c; /* Applies to iOS and Android */
+}
+
+ion-title {
+  color: white;
+  font-size: 24px;
+  text-align: center;
+  font-weight: bold;
+}
+ion-header {
+  --background: transparent;
+  --border-color: transparent;
+  --box-shadow: none;
+  --ion-safe-area-top: 0px;
+  --ion-safe-area-bottom: 0px;
+  border-bottom-left-radius: 20px;
+  border-bottom-right-radius: 20px;
+}
+ion-content {
+  --background: #e7e7e7;
+  --ion-safe-area-top: 0px;
+  --ion-safe-area-bottom: 0px;
+  padding: 0;
+  --align-items: center;
+  --align-content: center;
+  --justify-content: center;
+}
+.notification {
+  align-content: center;
+  align-items: center;
+  padding-left: 20px;
+  display: flex;
+  flex-direction: row;
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  margin: 20px;
+  background-color: #ffffff;
+  gap: 20px;
+  img {
+    width: 35px;
+    height: 35px;
+  }
+  h2 {
+    font-size: 18px;
+    color: #333;
+    font-weight: 700;
+  }
+}
+.logo {
+  width: auto;
+  height: 40px;
+  margin: 0 auto;
+  display: block;
+}
+ion-button {
+  --background: transparent;
+  color: black;
+  margin: 10px;
+}
+.notification-head {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  margin: 15px;
+  margin-top: 0px;
+}
+.noti-text {
+  font-size: 18px;
+  font-weight: 700;
+}
+.delete {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  font-weight: 400;
+}
+.notification-date {
+  display: flex;
+  font-size: 12px;
+  align-items: center;
+  flex-direction: row;
+  float: right;
+
+  img {
+    width: 10px;
+    height: 10px;
+    margin-right: 5px;
+  }
+}
+.notification-text {
+  font-size: 12px;
+  color: #666;
+  margin: 10px;
+  text-align: left;
+  line-height: 1.5;
+  .noti-title {
+    font-weight: 700;
+    color: #333;
+    margin-top: 20px;
+    margin-bottom: 0px;
+  }
+  .noti-desc {
+    font-size: 12px;
+
+    font-weight: 400;
+    color: #666;
+    margin-top: 0px;
+  }
+}
+.notification-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+
+  .noti-text {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin: 0;
+  }
+}
+/* grey page background like the screenshot */
+.page-bg {
+  --background: #ececec;
+}
+
+/* heading */
+.notification-head {
+  padding: 12px 16px;
+  .noti-text {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin: 0;
+  }
+}
+
+/* notification card */
+.noti-card {
+  display: flex;
+  background: #fff;
+  border-radius: 14px;
+  padding: 12px 16px;
+  margin: 8px 16px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+}
+
+/* avatar circle */
+.avatar {
+  flex: 0 0 44px;
+  height: 44px;
+  width: 44px;
+  border-radius: 50%;
+  background: #ff2dbd; /* hot-pink fill */
+  color: #000;
+  font-weight: 700;
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 12px;
+}
+
+/* right-hand section */
+.noti-body {
+  flex: 1;
+}
+
+/* date + unread dot */
+.noti-header {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: #000;
+  margin-bottom: 4px;
+
+  .dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #20d1e1;
+    margin-left: 8px;
+  }
+}
+
+/* title & message */
+.title {
+  font-weight: 600;
+  margin: 0 0 2px;
+}
+.message {
+  margin: 0;
+  font-size: 0.85rem;
+  line-height: 1.2;
+}

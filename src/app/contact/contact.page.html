@@ -1,0 +1,33 @@
+<ion-header translucent="true">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-button slot="start">
+        <ion-back-button defaultHref="/home"></ion-back-button>
+      </ion-button>
+    </ion-buttons>
+
+    <ion-title>Contact</ion-title>
+    <ion-buttons slot="end">
+      <ion-button disabled style="margin-left: 20px"> </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <div class="card" (click)="makeCall()">
+    <img src="assets/contactIcons/phone.svg" alt="phone" />
+    <h2>Contact Number <br />1039</h2>
+  </div>
+  <div class="card" (click)="sendEmail()">
+    <img src="assets/contactIcons/email.svg" alt="email" />
+    <h2>Email <br />CSU.Head&#64;nppf.org.bt</h2>
+  </div>
+  <div class="card" (click)="whatsApp()">
+    <img src="assets/contactIcons/whatsapp.svg" alt="whatsapp" />
+    <h2>WhatsApp <br />17170884</h2>
+  </div>
+  <div class="card" (click)="youtube()">
+    <img src="assets/contactIcons/youtube.svg" alt="youtube" />
+    <h2>YouTube <br />&#64;nppfofficial2374</h2>
+  </div>
+</ion-content>

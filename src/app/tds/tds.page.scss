@@ -1,0 +1,89 @@
+/* tds.page.scss */
+.table-wrapper {
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+th,
+td {
+  padding: 0.5rem 0.4rem;
+  text-align: center;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+th {
+  font-weight: 600;
+  white-space: nowrap;
+}
+.export-wrapper {
+  margin-top: 1rem;
+}
+
+ion-button {
+  font-weight: 600;
+}
+.tds-content {
+  padding: 16px;
+}
+
+.title {
+  font-size: 18px;
+  text-align: center;
+  font-weight: bold;
+  text-decoration: underline;
+  margin-bottom: 16px;
+}
+
+.table-wrapper {
+  overflow-x: auto;
+}
+
+.tds-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.tds-table th,
+.tds-table td {
+  border: 1px solid #ccc;
+  padding: 8px;
+  text-align: center;
+  vertical-align: middle;
+}
+
+.tds-table th {
+  background-color: #f2f2f2;
+  font-weight: bold;
+}
+.tds-content {
+  font-family: "Arial", sans-serif;
+
+  .user-info p {
+    margin: 2px 0;
+    font-size: 14px;
+  }
+
+  .tds-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 15px;
+    font-size: 13px;
+  }
+
+  .tds-table th,
+  .tds-table td {
+    border: 1px solid #000;
+    padding: 6px 8px;
+    text-align: center;
+  }
+
+  .export-wrapper {
+    margin-top: 20px;
+  }
+}

@@ -1,0 +1,61 @@
+ion-toolbar {
+  background: #5bd1d7;
+  border-bottom-left-radius: 20px;
+  border-bottom-right-radius: 20px;
+  height: 100px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  display: flex;
+  flex-direction: row;
+  transition: background-color 0.3s ease-in;
+}
+ion-back-button {
+  --color: white; /* Applies to iOS and Android */
+}
+
+ion-title {
+  color: white;
+  font-size: 24px;
+  text-align: center;
+  font-weight: bold;
+}
+ion-header {
+  --background: transparent;
+  --border-color: transparent;
+  --box-shadow: none;
+  --ion-safe-area-top: 0px;
+  --ion-safe-area-bottom: 0px;
+  border-bottom-left-radius: 20px;
+  border-bottom-right-radius: 20px;
+}
+ion-content {
+  --background: #e7e7e7;
+  --ion-safe-area-top: 0px;
+  --ion-safe-area-bottom: 0px;
+  padding: 0;
+  --align-items: center;
+  --align-content: center;
+  --justify-content: center;
+}
+.card {
+  align-content: center;
+  align-items: center;
+  padding-left: 20px;
+  display: flex;
+  flex-direction: row;
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  margin: 20px;
+  background-color: #ffffff;
+  gap: 20px;
+  img {
+    width: 35px;
+    height: 35px;
+  }
+  h2 {
+    font-size: 18px;
+    color: #333;
+    font-weight: 700;
+  }
+}
