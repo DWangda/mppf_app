@@ -1,8 +1,9 @@
 ion-toolbar {
-  background: #5bd1d7;
-  border-bottom-left-radius: 20px;
-  border-bottom-right-radius: 20px;
-  height: 100px;
+  // background: #5bd1d7;
+  // border-bottom-left-radius: 20px;
+  // border-bottom-right-radius: 20px;
+  height: 80px;
+  --padding-top: 32px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -10,9 +11,9 @@ ion-toolbar {
   flex-direction: row;
   transition: background-color 0.3s ease-in;
 }
-ion-back-button {
-  --color: #17a69c; /* Applies to iOS and Android */
-}
+// ion-back-button {
+//   --color: #17a69c; /* Applies to iOS and Android */
+// }
 
 ion-title {
   color: white;
@@ -29,29 +30,70 @@ ion-header {
   border-bottom-left-radius: 20px;
   border-bottom-right-radius: 20px;
 }
-ion-content {
-  --background: #e7e7e7;
-  --ion-safe-area-top: 0px;
-  --ion-safe-area-bottom: 0px;
-  padding: 0;
-  --align-items: center;
-  --align-content: center;
-  --justify-content: center;
+/* ===== Global, applies only when ion-content has class="bg-waves" ===== */
+:root {
+  --wave-img: url("/assets/Frame28998.png"); /* wave art */
+  --bg-top: #59bdb6; /* gradient colors */
+  --bg-mid: #a9ddd8;
+  --bg-bot: #ffffff;
+
+  /* vertical offsets (tweak per page if needed) */
+  --wave1-top: 24px; /* top wave down/up */
+  --wave2-bottom: -56px; /* bottom wave up/down (neg = dip below) */
 }
+
+ion-content.bg-waves1 {
+  --background: transparent; /* disable Ionic default */
+}
+
+/* ✅ Draw on the SCROLLING layer of this ion-content */
+ion-content.bg-waves1::part(scroll) {
+  background-image: var(--wave-img), /* top wave (full width) */ var(--wave-img),
+    /* bottom wave (full width) */
+      radial-gradient(
+        120% 60% at 70% 20%,
+        rgba(255, 255, 255, 0) 0%,
+        rgba(255, 255, 255, 0) 45%,
+        rgba(255, 255, 255, 0.12) 100%
+      ),
+    linear-gradient(
+      to bottom,
+      var(--bg-top) 0%,
+      var(--bg-mid) 55%,
+      var(--bg-bot) 100%
+    );
+  background-repeat: no-repeat, no-repeat, no-repeat, no-repeat;
+
+  /* waves span 100% width; keep aspect ratio; bg covers entire area */
+  background-size: 100% auto, 100% auto, 100% 100%, 100% 100%;
+
+  background-position: center top var(--wave1-top),
+    center bottom var(--wave2-bottom), center center, center center;
+
+  /* ensure all layers scroll with content */
+  background-attachment: scroll, scroll, scroll, scroll;
+}
+
+/* Optional (if you want the gradient visible behind the header too) */
+// ion-header,
+// ion-toolbar {
+//   --background: transparent;
+//   background: transparent;
+
 .notification {
   align-content: center;
   align-items: center;
   padding-left: 20px;
   display: flex;
   flex-direction: row;
-  border: 1px solid #ccc;
+  border: 1px solid gray;
   border-radius: 10px;
   margin: 20px;
-  background-color: #ffffff;
+  background-color: transparent;
   gap: 20px;
   img {
-    width: 35px;
-    height: 35px;
+    width: 25px;
+    height: 25px;
   }
   h2 {
     font-size: 18px;
@@ -60,7 +102,7 @@ ion-content {
   }
 }
 .logo {
-  width: auto;
+  width: 40px;
   height: 40px;
   margin: 0 auto;
   display: block;
@@ -80,6 +122,7 @@ ion-button {
 .noti-text {
   font-size: 18px;
   font-weight: 700;
+  color: #333;
 }
 .delete {
   display: flex;
@@ -151,7 +194,11 @@ ion-button {
 /* notification card */
 .noti-card {
   display: flex;
-  background: #fff;
+  justify-content: center;
+  align-content: center;
+  align-items: center;
+  border: 1px solid gray;
+  background: transparent;
   border-radius: 14px;
   padding: 12px 16px;
   margin: 8px 16px;
@@ -164,7 +211,7 @@ ion-button {
   height: 44px;
   width: 44px;
   border-radius: 50%;
-  background: #ff2dbd; /* hot-pink fill */
+  background: #5bd1d7; /* hot-pink fill */
   color: #000;
   font-weight: 700;
   font-size: 0.9rem;
@@ -184,7 +231,7 @@ ion-button {
   display: flex;
   justify-content: flex-end;
   align-items: center;
-  font-size: 0.75rem;
+  font-size: 12px;
   font-weight: 500;
   color: #000;
   margin-bottom: 4px;
@@ -200,11 +247,14 @@ ion-button {
 
 /* title & message */
 .title {
+  font-size: 14px;
   font-weight: 600;
   margin: 0 0 2px;
+  color: #333;
 }
 .message {
   margin: 0;
-  font-size: 0.85rem;
+  font-size: 12px;
   line-height: 1.2;
+  color: #333;
 }

@@ -1,5 +1,5 @@
 <div class="ion-page" id="main-content">
-  <ion-header style="border: 0; background: transparent" [translucent]="true">
+  <ion-header style="border: 0; background: transparent">
     <ion-toolbar
       border="none"
       style="
@@ -7,6 +7,8 @@
         justify-content: space-between;
         align-items: center;
         flex-direction: row;
+        height: 80px;
+        padding-top: 32px;
       "
     >
       <ion-buttons slot="start">
@@ -21,7 +23,7 @@
       </ion-buttons>
     </ion-toolbar>
   </ion-header>
-  <ion-content [fullscreen]="true" class="ion-padding">
+  <ion-content [fullscreen]="true" class="bg-waves">
     <div class="profile-container">
       <div class="detail-header">
         <p>Contact Details</p>

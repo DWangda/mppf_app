@@ -2,13 +2,14 @@
   <div class="centered">
     <img src="assets/logo1.png" class="logo" alt="App Logo" />
     <p class="login-text1">Welcome to</p>
-    <p class="login-text2">Pensioner Liveliness Verification App</p>
+    <p class="login-text2">Nga Yoe</p>
     <!-- <p class="login-text2">{{ 'LOGIN.TITLE' | translate }}</p> -->
 
     <!-- toggle appears on the right of the toolbar -->
     <app-language-toggle></app-language-toggle>
     <div class="button-group">
       <ion-button
+        mode="ios"
         expand="block"
         fill="outline"
         style="
@@ -20,7 +21,7 @@
           --border-color: #5ac994;
           --padding-top: 0;
           --padding-bottom: 0;
-          color: #333;
+          color: #ffffff;
           display: flex;
           justify-content: center;
           flex-direction: row;
@@ -28,8 +29,13 @@
         (click)="onLogin()"
       >
         <img src="assets/QRlogo.svg" class="button-logo" alt="App Logo" />
-        <p style="font-size: 18px; font: bold">Login with Bhutan NDI</p>
+        <p style="font-size: 18px; color: #333; font: bold">
+          Liveliness with Bhutan NDI
+        </p>
       </ion-button>
     </div>
+    <ion-button expand="block" style="color: #333" (click)="goToHome()"
+      >Go to Home</ion-button
+    >
   </div>
 </ion-content>

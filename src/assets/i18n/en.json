@@ -2,7 +2,7 @@
   "LOGIN": {
     "TITLE": "Sign In",
     "WELCOME": "Welcome to",
-    "SUBTITLE": "Pensioner Liveliness Verification App",
+    "SUBTITLE": "Nga Yoe",
     "BUTTON": "Login with Bhutan NDI"
   },
   "USER": {
@@ -19,5 +19,91 @@
   "SERVICES": {
     "TITLE": "Services",
     "SUBTITLE": "Available Services"
+  },
+  "ABOUT": {
+    "TITLE": "About us",
+    "DESCRIPTION": "The National Pension and Provident Fund manages retirement benefits for civil servants, corporate employees and the member of the armed forces. Currently, pensioners are not required to verify their identity to prove they are alive, which poses substantial risk of incomeleakage. Verification of pensioners lives and income leakage in pension systems is a significant issue, leading to financial losses and undermining the integrity of pension schemes. Ensuring that pension disbursements reach only the legitimate beneficiaries is crucial."
+  },
+  "CONTACT": {
+    "TITLE": "Contact",
+    "CONTACTNUMBER": "Contact Number",
+    "NUMBER": "1039",
+    "EMAIL": "Email",
+    "EMAILID": "CSU.Head@nppf.org.bt",
+    "WHATSAPP": "WhatsApp",
+    "WHATSAPPNUMBER": "17170884",
+    "YOUTUBE": "YouTube",
+    "YOUTUBEID": "@nppfofficial2374"
+  },
+  "NAVBAR": {
+    "NOTIFICATIONS": "Notification ",
+    "NOTI-SUB": "Receive app notifications",
+    "CONTACT": "Contact",
+    "FEEDBACK": "Feedback",
+    "FEEDBACK-SUB": "Give us suggestion",
+    "FAQ": "FAQ",
+    "FAQ-SUB": "Frequently asked questions",
+    "POLICY": "Privacy Policy",
+    "POLICY-SUB": "Read our privacy policy",
+    "ABOUT": "About",
+    "ABOUT-SUB": "About the app",
+    "SESSION": "User Session",
+    "LOGOUT": "Logout"
+  },
+  "LIVINESS": {
+    "BUTTON": "Check for Liveliness"
+  },
+  "FEEDBACK": {
+    "TYPE": "Feedback Type",
+    "TYPE-SUB": "suggestion or Bug",
+    "MESSAGE": "Feedback Message",
+    "MESSAGE-SUB": "Describe your Feedback",
+    "BUTTON": "Submit Feedback"
+  },
+  "USERDETAIL": {
+    "TITLE": "User Details",
+    "PENSION-ID": "Pension ID",
+    "YourPersonalDetails": "Your Personal Details",
+    "FULLNAME": "Full Name",
+    "IDNUMBER": "ID Number",
+    "CONTACTDETAILS": "Contact Details",
+    "MOBILE": "Mobile Number",
+    "EMAIL": "Email",
+    "ADDRESS": "Address Details",
+    "VILLAGE": "Village",
+    "GEWOG": "Gewog",
+    "DZONGKHAG": "Dzongkhag",
+    "PENSIONERDETAILS": "Pensioner Details",
+    "PENSIONTYPE": "Pension Type",
+    "PENSIONSTATUS": "Pension Status",
+    "PENSIONACCOUNT": "Pension Acc",
+    "PENSIONINCREMENT": "Pension Increment/Year",
+    "MONTHLYPENSION": "Monthly Pension Amount",
+    "LOTEDETHDETAILS": "Lotedeth Details",
+    "LOTEDETHMEMBER": "Lotedeth Member"
+  },
+  "PENSIONDETAIL": {
+    "TITLE": "Pension Statement",
+    "YEAR": "Year",
+    "MONTH": "Month",
+    "AMOUNT": "Pension Amount",
+    "STATEMENT": "Statement",
+    "DATE": "Date",
+    "TXNREF": "Txn Ref"
+  },
+  "VIEWMORE": {
+    "TITLE": "View More"
+  },
+  "TDS": {
+    "TITLE": "TDS Report",
+    "MONTH": "Month",
+    "GROSSPENSION": "Gross Pension",
+    "NETPENSION": "Net Pension",
+    "ARREARS": "Arrears",
+    "LOTEDHCONT": " Lotedh Cont.",
+    "TDS": "TDS",
+    "RECEIPTNUMBER": "Receipt Number",
+    "RECEIPTDATE": "Receipt Date",
+    "EXPORTPDF": "Export PDF"
   }
 }

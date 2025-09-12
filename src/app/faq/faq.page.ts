@@ -47,7 +47,7 @@ export class FaqPage implements OnInit {
   }
 
   fetchFaqs() {
-    this.http.get<any[]>('http://localhost:8080/api/faqs').subscribe({
+    this.http.get<any[]>('https://202.144.158.3/nga-yoe/api/faqs').subscribe({
       next: (data) => {
         // Optionally sort by displayOrder
         this.faqs = data

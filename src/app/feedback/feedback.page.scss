@@ -10,6 +10,21 @@
 .greet {
   align-items: start;
 }
+// form,
+// ion-label,
+// ion-input {
+//   --color: #000000;
+// }
+ion-item {
+  --background: transparent;
+  ion-label,
+  ion-input {
+    --color: #000000;
+  }
+  ion-textarea {
+    --color: #000000;
+  }
+}
 .greet h1 {
   font-size: 22px;
   line-height: 24px;
@@ -74,7 +89,7 @@
   text-decoration: none;
 }
 .logo {
-  width: auto;
+  width: 40px;
   height: 40px;
   margin: 0 auto;
   display: block;
@@ -147,10 +162,10 @@
   object-fit: cover;
   border-radius: 16px;
 }
-ion-back-button {
-  --color: #5bd1d7;
-  margin: 10px;
-}
+// ion-back-button {
+//   --color: #5bd1d7;
+//   margin: 10px;
+// }
 /* src/app/pages/user-details/user-details.page.scss */
 .feedback-container {
   max-width: 600px;

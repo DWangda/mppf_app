@@ -1,9 +1,15 @@
-<ion-header style="border: 0; background: transparent" [translucent]="true">
+<ion-header style="border: 0; background: transparent">
   <ion-toolbar
-    style="display: flex; justify-content: space-between; align-items: center"
+    style="
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      height: 80px;
+      padding-top: 32px;
+    "
   >
     <ion-buttons slot="start">
-      <ion-back-button defaultHref="/report"></ion-back-button>
+      <ion-back-button defaultHref="/home"></ion-back-button>
     </ion-buttons>
     <ion-title>
       <img class="logo" src="assets/header-logo.png" alt="logo" />
@@ -15,23 +21,11 @@
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true" class="ion-padding">
+<ion-content [fullscreen]="true" class="bg-waves">
   <div class="tds-content">
-    <h2 class="title">TDS Report</h2>
-
-    <!-- User Info -->
-    <!-- <div class="user-info" *ngIf="!loading">
-      <p><strong>Name:</strong> {{ userDetails.name }}</p>
-      <p>
-        <strong>Commencement Date:</strong> {{ userDetails.commencementDate }}
-      </p>
-      <p><strong>Address:</strong> {{ userDetails.address }}</p>
-      <p>
-        <strong>Pension Savings A/c.:</strong> {{ userDetails.accountNumber }}
-      </p>
-      <p><strong>Pension ID No.:</strong> {{ userDetails.pensionId }}</p>
-      <p><strong>TPN No / CID #:</strong> {{ userDetails.cid }}</p>
-    </div> -->
+    <h2 class="title" [ngClass]="{ 'dzongkha-style': currentLang === 'dz' }">
+      {{'TDS.TITLE'|translate}}
+    </h2>
 
     <!-- Spinner -->
     <ion-spinner name="crescent" *ngIf="loading"></ion-spinner>
@@ -46,14 +40,30 @@
       <table #tdsTable class="tds-table">
         <thead>
           <tr>
-            <th>Month</th>
-            <th>Gross Pension</th>
-            <th>Arrears</th>
-            <th>Lotedh Cont.</th>
-            <th>Net Pension</th>
-            <th>TDS</th>
-            <th>Receipt Number</th>
-            <th>Receipt Date</th>
+            <th [ngClass]="{ 'dzongkha-style': currentLang === 'dz' }">
+              {{'TDS.MONTH'|translate}}
+            </th>
+            <th [ngClass]="{ 'dzongkha-style': currentLang === 'dz' }">
+              {{'TDS.GROSSPENSION'|translate}}
+            </th>
+            <th [ngClass]="{ 'dzongkha-style': currentLang === 'dz' }">
+              {{'TDS.ARREARS'|translate}}
+            </th>
+            <th [ngClass]="{ 'dzongkha-style': currentLang === 'dz' }">
+              {{'TDS.LOTEDHCONT'|translate}}
+            </th>
+            <th [ngClass]="{ 'dzongkha-style': currentLang === 'dz' }">
+              {{'TDS.NETPENSION'|translate}}
+            </th>
+            <th [ngClass]="{ 'dzongkha-style': currentLang === 'dz' }">
+              {{'TDS.TDS'|translate}}
+            </th>
+            <th [ngClass]="{ 'dzongkha-style': currentLang === 'dz' }">
+              {{'TDS.RECEIPTNUMBER'|translate}}
+            </th>
+            <th [ngClass]="{ 'dzongkha-style': currentLang === 'dz' }">
+              {{'TDS.RECEIPTDATE'|translate}}
+            </th>
           </tr>
         </thead>
         <tbody>
@@ -73,9 +83,27 @@
 
     <!-- Export Button -->
     <div class="export-wrapper" *ngIf="statements.length">
-      <ion-button expand="block" color="primary" (click)="exportPdf()">
+      <ion-button
+        expand="block"
+        style="
+          /* width: 220px; */
+          --background: #00796b;
+          --background-activated: #124143;
+          --border-width: 2px;
+          --border-color: #00796b;
+          --padding-top: 0;
+          --padding-bottom: 0;
+          color: #d1d1d1;
+          height: 40px;
+          display: flex;
+          justify-content: center;
+          flex-direction: row;
+        "
+        (click)="exportPdf()"
+        [ngClass]="{ 'dzongkha-style': currentLang === 'dz' }"
+      >
         <ion-icon name="download-outline" slot="start"></ion-icon>
-        Export PDF
+        {{'TDS.EXPORTPDF'|translate}}
       </ion-button>
     </div>
   </div>

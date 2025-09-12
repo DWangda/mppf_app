@@ -12,6 +12,7 @@ import {
   IonItem,
 } from '@ionic/angular/standalone';
 import { HttpClient } from '@angular/common/http';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 interface PensionSchemeDto {
   pensionId: string;
@@ -26,6 +27,13 @@ interface PensionSchemeDto {
   commencementDate: string | null;
   lotedth: boolean;
 }
+interface ContactDetails {
+  registeredMobile: string;
+  registeredEmail: string;
+  currentVillage: string;
+  currentGewog: string;
+  currentDzongkhag: string;
+}
 
 @Component({
   selector: 'app-user-details',
@@ -38,6 +46,7 @@ interface PensionSchemeDto {
     IonButton,
     IonContent,
     IonHeader,
+    TranslateModule,
     IonTitle,
     IonToolbar,
     CommonModule,
@@ -56,8 +65,18 @@ export class UserDetailsPage implements OnInit {
   currentYearIncrementPct = '';
   commencementDate = '';
   lotedth = '';
-
-  constructor(private http: HttpClient) {}
+  phoneNumber = '';
+  email = '';
+  village = '';
+  gewog = '';
+  dzongkhag = '';
+  currentLang: string;
+  constructor(private http: HttpClient, private translate: TranslateService) {
+    this.currentLang = this.translate.currentLang;
+    this.translate.onLangChange.subscribe(
+      (event) => (this.currentLang = event.lang)
+    );
+  }
 
   // ngOnInit() {
   //   const cid = localStorage.getItem('cidNumber') ?? '';
@@ -65,7 +84,7 @@ export class UserDetailsPage implements OnInit {
   //     return;
   //   }
 
-  //   const url = `http://localhost:8080/api/pension-scheme-details/${cid}`;
+  //   const url = `https://202.144.158.3/nga-yoe/api/pension-scheme-details/${cid}`;
 
   //   this.http.get<any>(url).subscribe({
   //     next: (res) => {
@@ -101,7 +120,7 @@ export class UserDetailsPage implements OnInit {
       return;
     }
 
-    const url = `http://localhost:8080/api/pension-scheme-details/by-cid/${cid}`;
+    const url = `https://202.144.158.3/nga-yoe/api/pension-scheme-details/by-cid/${cid}`;
 
     this.http.get<any>(url).subscribe({
       next: (res) => {
@@ -132,7 +151,7 @@ export class UserDetailsPage implements OnInit {
           // 🔽 Call the lotedth API using the fetched pensionId
           this.http
             .get<any>(
-              `http://localhost:8080/api/lotedth/check/${dto.pensionId}`
+              `https://202.144.158.3/nga-yoe/api/lotedth/check/${dto.pensionId}`
             )
             .subscribe({
               next: (lotedthRes) => {
@@ -148,6 +167,24 @@ export class UserDetailsPage implements OnInit {
       },
       error: () => this.resetFields(),
     });
+    const url1 = `https://202.144.158.3/nga-yoe/api/plv-users/contact-details/${cid}`;
+    this.http.get<any>(url1).subscribe({
+      next: (res) => {
+        const cond: ContactDetails | undefined = res?.status
+          ? (res.data as ContactDetails)
+          : undefined;
+        if (cond) {
+          this.phoneNumber = cond.registeredMobile ?? '';
+          this.email = cond.registeredEmail ?? '--';
+          this.village = cond.currentVillage ?? '';
+          this.gewog = cond.currentGewog ?? '';
+          this.dzongkhag = cond.currentDzongkhag ?? '';
+        } else {
+          this.resetFields1();
+        }
+      },
+      error: () => this.resetFields1(),
+    });
   }
 
   private resetFields() {
@@ -161,5 +198,12 @@ export class UserDetailsPage implements OnInit {
       this.currentYearIncrementPct =
       this.lotedth =
         '‑‑';
+  }
+  private resetFields1() {
+    this.phoneNumber = '';
+    this.email = '';
+    this.village = '';
+    this.gewog = '';
+    this.dzongkhag = '';
   }
 }

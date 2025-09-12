@@ -90,6 +90,7 @@ ion-button.ion-activated {
   display: flex;
   align-items: center;
   text-align: center;
+  color: #000;
   margin: 30px 0;
 
   span {
@@ -112,12 +113,12 @@ ion-button.ion-activated {
   &::after {
     margin-left: 6px;
   }
-  @media (prefers-color-scheme: dark) {
-    &::before,
-    &::after {
-      border-bottom: 1.2px solid white;
-    }
-  }
+  // @media (prefers-color-scheme: dark) {
+  //   &::before,
+  //   &::after {
+  //     border-bottom: 1.2px solid white;
+  //   }
+  // }
 }
 .scan-icon {
   width: 25px;
@@ -178,9 +179,9 @@ ion-toolbar {
   flex-direction: row;
   transition: background-color 0.3s ease-in;
 }
-ion-back-button {
-  --color: white; /* Applies to iOS and Android */
-}
+// ion-back-button {
+//   --color: white; /* Applies to iOS and Android */
+// }
 
 ion-title {
   color: white;
@@ -227,7 +228,11 @@ ion-content {
     font-weight: 700;
   }
 }
-ion-back-button {
-  --color: #5bd1d7;
-  margin: 10px;
+// ion-back-button {
+//   --color: #5bd1d7;
+//   margin: 10px;
+// }
+ion-list {
+  background: transparent;
+  color: #000;
 }

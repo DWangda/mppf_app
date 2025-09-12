@@ -1,5 +1,5 @@
 <!-- HEADER -- stays the same -->
-<ion-header translucent="true">
+<ion-header>
   <ion-toolbar>
     <ion-buttons slot="start">
       <ion-back-button defaultHref="/home"></ion-back-button>
@@ -14,9 +14,11 @@
 </ion-header>
 
 <!-- CONTENT -->
-<ion-content [fullscreen]="true" class="page-bg">
+<ion-content [fullscreen]="true" class="bg-waves1">
   <div class="notification-head">
-    <p class="noti-text">Notification</p>
+    <p class="noti-text" [ngClass]="{ 'dzongkha-style': currentLang === 'dz' }">
+      {{'NAVBAR.NOTIFICATIONS'|translate}}
+    </p>
   </div>
 
   <!-- Card list -->

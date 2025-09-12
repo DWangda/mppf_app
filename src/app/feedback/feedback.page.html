@@ -1,5 +1,5 @@
 <div class="ion-page" id="main-content">
-  <ion-header style="border: 0; background: transparent" [translucent]="true">
+  <ion-header style="border: 0; background: transparent">
     <ion-toolbar
       border="none"
       style="
@@ -22,34 +22,67 @@
     </ion-toolbar>
   </ion-header>
 
-  <ion-content class="ion-padding">
+  <ion-content class="bg-waves">
     <form>
       <ion-item>
-        <ion-label position="stacked">Feedback Type</ion-label>
+        <ion-label
+          position="stacked"
+          [ngClass]="{ 'dzongkha-style': currentLang === 'dz' }"
+          >{{'FEEDBACK.TYPE' | translate}}</ion-label
+        >
         <ion-input
           [(ngModel)]="feedbackType"
           name="feedbackType"
+          #feedbackTypeCtrl="ngModel"
           required
-          placeholder="Suggestion or Bug"
-        ></ion-input>
+          [clearInput]="true"
+          [placeholder]="'FEEDBACK.TYPE-SUB' | translate"
+          [ngClass]="{ 'dzongkha-style': currentLang === 'dz' }"
+          inputmode="text"
+        >
+        </ion-input>
       </ion-item>
 
       <ion-item>
-        <ion-label position="stacked">Feedback Message</ion-label>
+        <ion-label
+          position="stacked"
+          [ngClass]="{ 'dzongkha-style': currentLang === 'dz' }"
+          >{{'FEEDBACK.MESSAGE' | translate}}</ion-label
+        >
         <ion-textarea
           [(ngModel)]="feedbackMessage"
           name="feedbackMessage"
+          #feedbackMessageCtrl="ngModel"
           required
-          placeholder="Describe your feedback"
-        ></ion-textarea>
+          [autoGrow]="true"
+          [counter]="true"
+          [placeholder]="'FEEDBACK.MESSAGE-SUB' | translate"
+          [ngClass]="{ 'dzongkha-style': currentLang === 'dz' }"
+          aria-label="Feedback message"
+        >
+        </ion-textarea>
       </ion-item>
 
       <ion-button
         expand="block"
-        class="ion-margin-top"
+        style="
+          width: 220px;
+          --background: #00796b;
+          --background-activated: #124143;
+          --border-width: 2px;
+          --border-color: #00796b;
+          --padding-top: 0;
+          --padding-bottom: 0;
+          color: #d1d1d1;
+          height: 40px;
+          display: flex;
+          justify-content: center;
+          flex-direction: row;
+        "
         (click)="submitFeedback()"
+        [ngClass]="{ 'dzongkha-style': currentLang === 'dz' }"
       >
-        Submit Feedback
+        {{'FEEDBACK.BUTTON' | translate}}
       </ion-button>
     </form>
   </ion-content>

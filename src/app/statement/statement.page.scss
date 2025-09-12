@@ -7,8 +7,18 @@ table {
   width: 100%;
   border-collapse: collapse;
   font-size: 0.9rem;
+  color: #000;
 }
-
+.logo {
+  width: 40px;
+  height: 40px;
+  margin: 0 auto;
+  display: block;
+}
+// ion-back-button {
+//   --color: #5bd1d7;
+//   margin: 10px;
+// }
 th,
 td {
   padding: 0.5rem 0.4rem;

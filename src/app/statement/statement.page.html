@@ -1,5 +1,5 @@
 <div class="ion-page" id="main-content">
-  <ion-header style="border: 0; background: transparent" [translucent]="true">
+  <ion-header style="border: 0; background: transparent">
     <ion-toolbar
       border="none"
       style="
@@ -7,10 +7,12 @@
         justify-content: space-between;
         align-items: center;
         flex-direction: row;
+        height: 80px;
+        padding-top: 32px;
       "
     >
       <ion-buttons slot="start">
-        <ion-back-button defaultHref="/report"></ion-back-button>
+        <ion-back-button defaultHref="/home"></ion-back-button>
       </ion-buttons>
       <ion-title>
         <img class="logo" src="assets/header-logo.png" alt="logo" />
@@ -24,10 +26,7 @@
   <ion-content [fullscreen]="true" class="ion-padding">
     <div class="ion-page" id="main-content">
       <!-- ───────── Header ───────── -->
-      <ion-header
-        style="border: 0; background: transparent"
-        [translucent]="true"
-      >
+      <ion-header style="border: 0; background: transparent">
         <ion-toolbar>
           <ion-buttons slot="start">
             <ion-back-button defaultHref="/report"></ion-back-button>
@@ -45,7 +44,7 @@
       </ion-header>
 
       <!-- ───────── Content ───────── -->
-      <ion-content [fullscreen]="true" class="ion-padding">
+      <ion-content [fullscreen]="true" class="bg-waves">
         <div class="tds-content">
           <h2
             style="
@@ -54,9 +53,11 @@
               text-align: center;
               font-weight: 700;
               text-decoration: underline;
+              color: #333;
             "
+            [ngClass]="{ 'dzongkha-style': currentLang === 'dz' }"
           >
-            Statement
+            {{'PENSIONDETAIL.STATEMENT' | translate}}
           </h2>
 
           <!-- Loading spinner -->
@@ -72,12 +73,22 @@
             <table #tdsTable class="tds-table">
               <thead>
                 <tr>
-                  <th>Year</th>
-                  <th>Month</th>
-                  <th>Pension Amt</th>
-                  <!-- <th>CPI %</th> -->
-                  <th>Date</th>
-                  <th>Txn Ref</th>
+                  <th [ngClass]="{ 'dzongkha-style': currentLang === 'dz' }">
+                    {{ 'PENSIONDETAIL.YEAR' | translate }}
+                  </th>
+                  <th [ngClass]="{ 'dzongkha-style': currentLang === 'dz' }">
+                    {{ 'PENSIONDETAIL.MONTH' | translate }}
+                  </th>
+                  <th [ngClass]="{ 'dzongkha-style': currentLang === 'dz' }">
+                    {{ 'PENSIONDETAIL.AMOUNT' | translate }}
+                  </th>
+                  <!-- <th>CPI %</th> -->
+                  <th [ngClass]="{ 'dzongkha-style': currentLang === 'dz' }">
+                    {{ 'PENSIONDETAIL.DATE' | translate }}
+                  </th>
+                  <th [ngClass]="{ 'dzongkha-style': currentLang === 'dz' }">
+                    {{ 'PENSIONDETAIL.TXNREF' | translate }}
+                  </th>
                 </tr>
               </thead>
 

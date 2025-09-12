@@ -16,6 +16,7 @@ import {
   IonRefresher,
   IonRefresherContent,
 } from '@ionic/angular/standalone';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 interface Notification {
   id: number;
@@ -44,6 +45,7 @@ interface Notification {
     // Angular
     CommonModule,
     FormsModule,
+    TranslateModule,
     HttpClientModule,
   ],
   providers: [DatePipe],
@@ -53,8 +55,18 @@ interface Notification {
 export class NotificationPage implements OnInit {
   notifications: Notification[] = [];
   loading = false;
+  currentLang: string;
 
-  constructor(private http: HttpClient, private datePipe: DatePipe) {}
+  constructor(
+    private http: HttpClient,
+    private datePipe: DatePipe,
+    private translate: TranslateService
+  ) {
+    this.currentLang = this.translate.currentLang;
+    this.translate.onLangChange.subscribe(
+      (event) => (this.currentLang = event.lang)
+    );
+  }
 
   ngOnInit(): void {
     this.fetchNotifications();
@@ -67,7 +79,7 @@ export class NotificationPage implements OnInit {
 
   private fetchNotifications(done?: () => void): void {
     this.loading = true;
-    const url = 'http://localhost:8080/api/notifications';
+    const url = 'https://202.144.158.3/nga-yoe/api/notifications';
 
     this.http.get<{ status: boolean; data: Notification[] }>(url).subscribe({
       next: (res) => {

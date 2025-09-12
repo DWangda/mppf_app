@@ -11,6 +11,7 @@ import {
   IonButton,
   IonIcon,
 } from '@ionic/angular/standalone';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-contact',
@@ -19,6 +20,7 @@ import {
   standalone: true,
   imports: [
     IonButton,
+    TranslateModule,
     IonBackButton,
     IonButtons,
     IonContent,
@@ -30,7 +32,13 @@ import {
   ],
 })
 export class ContactPage implements OnInit {
-  constructor() {}
+  currentLang: string;
+  constructor(private translate: TranslateService) {
+    this.currentLang = this.translate.currentLang;
+    this.translate.onLangChange.subscribe(
+      (event) => (this.currentLang = event.lang)
+    );
+  }
 
   ngOnInit() {}
 

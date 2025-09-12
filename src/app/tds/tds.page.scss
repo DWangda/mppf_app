@@ -8,7 +8,12 @@ table {
   border-collapse: collapse;
   font-size: 0.9rem;
 }
-
+.logo {
+  width: 40px;
+  height: 40px;
+  margin: 0 auto;
+  display: block;
+}
 th,
 td {
   padding: 0.5rem 0.4rem;
@@ -37,6 +42,7 @@ ion-button {
   font-weight: bold;
   text-decoration: underline;
   margin-bottom: 16px;
+  color: #333;
 }
 
 .table-wrapper {
@@ -55,10 +61,11 @@ ion-button {
   padding: 8px;
   text-align: center;
   vertical-align: middle;
+  color: #000;
 }
 
 .tds-table th {
-  background-color: #f2f2f2;
+  background-color: transparent;
   font-weight: bold;
 }
 .tds-content {
@@ -81,9 +88,15 @@ ion-button {
     border: 1px solid #000;
     padding: 6px 8px;
     text-align: center;
+    color: #333;
   }
 
   .export-wrapper {
     margin-top: 20px;
   }
 }
+
+// ion-back-button {
+//   --color: #5bd1d7;
+//   margin: 10px;
+// }

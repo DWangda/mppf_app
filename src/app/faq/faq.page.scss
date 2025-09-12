@@ -74,7 +74,7 @@
   text-decoration: none;
 }
 .logo {
-  width: auto;
+  width: 40px;
   height: 40px;
   margin: 0 auto;
   display: block;
@@ -147,10 +147,10 @@
   object-fit: cover;
   border-radius: 16px;
 }
-ion-back-button {
-  --color: #5bd1d7;
-  margin: 10px;
-}
+// ion-back-button {
+//   --color: #5bd1d7;
+//   margin: 10px;
+// }
 /* src/app/pages/user-details/user-details.page.scss */
 .feedback-container {
   max-width: 600px;
@@ -276,7 +276,14 @@ ion-back-button {
     color: #5bd1d7;
   }
 }
-
+ion-item,
+ion-list {
+  --background: transparent; /* ion-item’s CSS var */
+  background: transparent; /* ion-list uses normal CSS background */
+}
+h3 {
+  color: #333;
+}
 /* Dark mode support */
 @media (prefers-color-scheme: dark) {
   .detail-field {

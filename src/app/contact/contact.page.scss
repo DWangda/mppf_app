@@ -1,22 +1,24 @@
 ion-toolbar {
-  background: #5bd1d7;
-  border-bottom-left-radius: 20px;
-  border-bottom-right-radius: 20px;
-  height: 100px;
+  // background: #5bd1d7;
+  // border-bottom-left-radius: 20px;
+  // border-bottom-right-radius: 20px;
+  --padding-top: 32px;
+  --padding-bottom: 10px;
+  height: 80px;
   display: flex;
   align-items: center;
   justify-content: center;
   display: flex;
   flex-direction: row;
-  transition: background-color 0.3s ease-in;
+  // transition: background-color 0.3s ease-in;
 }
-ion-back-button {
-  --color: white; /* Applies to iOS and Android */
-}
+// ion-back-button {
+//   --color: #5bd1d7; /* Applies to iOS and Android */
+// }
 
 ion-title {
-  color: white;
-  font-size: 24px;
+  color: #333;
+  font-size: 20px;
   text-align: center;
   font-weight: bold;
 }
@@ -29,33 +31,83 @@ ion-header {
   border-bottom-left-radius: 20px;
   border-bottom-right-radius: 20px;
 }
-ion-content {
-  --background: #e7e7e7;
-  --ion-safe-area-top: 0px;
-  --ion-safe-area-bottom: 0px;
-  padding: 0;
-  --align-items: center;
-  --align-content: center;
-  --justify-content: center;
-}
+// ion-content {
+//   --background: #e7e7e7;
+//   --ion-safe-area-top: 0px;
+//   --ion-safe-area-bottom: 0px;
+//   padding: 0;
+//   --align-items: center;
+//   --align-content: center;
+//   --justify-content: center;
+// }
 .card {
   align-content: center;
   align-items: center;
   padding-left: 20px;
   display: flex;
   flex-direction: row;
-  border: 1px solid #ccc;
+  border: 1px solid gray;
   border-radius: 10px;
   margin: 20px;
-  background-color: #ffffff;
+  background-color: transparent;
   gap: 20px;
   img {
-    width: 35px;
-    height: 35px;
+    width: 25px;
+    height: 25px;
   }
   h2 {
-    font-size: 18px;
+    font-size: 12px;
     color: #333;
-    font-weight: 700;
+    font-weight: 600;
   }
+}
+/* ===== Global, applies only when ion-content has class="bg-waves" ===== */
+:root {
+  --wave-img: url("/assets/Frame28998.png"); /* wave art */
+  --bg-top: #59bdb6; /* gradient colors */
+  --bg-mid: #a9ddd8;
+  --bg-bot: #ffffff;
+
+  /* vertical offsets (tweak per page if needed) */
+  --wave1-top: 24px; /* top wave down/up */
+  --wave2-bottom: -56px; /* bottom wave up/down (neg = dip below) */
+}
+
+ion-content.bg-waves1 {
+  --background: transparent; /* disable Ionic default */
+}
+
+/* ✅ Draw on the SCROLLING layer of this ion-content */
+ion-content.bg-waves1::part(scroll) {
+  background-image: var(--wave-img), /* top wave (full width) */ var(--wave-img),
+    /* bottom wave (full width) */
+      radial-gradient(
+        120% 60% at 70% 20%,
+        rgba(255, 255, 255, 0) 0%,
+        rgba(255, 255, 255, 0) 45%,
+        rgba(255, 255, 255, 0.12) 100%
+      ),
+    linear-gradient(
+      to bottom,
+      var(--bg-top) 0%,
+      var(--bg-mid) 55%,
+      var(--bg-bot) 100%
+    );
+  background-repeat: no-repeat, no-repeat, no-repeat, no-repeat;
+
+  /* waves span 100% width; keep aspect ratio; bg covers entire area */
+  background-size: 100% auto, 100% auto, 100% 100%, 100% 100%;
+
+  background-position: center top var(--wave1-top),
+    center bottom var(--wave2-bottom), center center, center center;
+
+  /* ensure all layers scroll with content */
+  background-attachment: scroll, scroll, scroll, scroll;
+}
+
+/* Optional (if you want the gradient visible behind the header too) */
+ion-header,
+ion-toolbar {
+  --background: transparent;
+  background: transparent;
 }

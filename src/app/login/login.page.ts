@@ -78,13 +78,13 @@ export class LoginPage {
   }
 
   /**
-   * 1️⃣  GET  http://localhost:8080/api/pensioner/{cid}
-   * 2️⃣  If status ≠ true, POST http://localhost:8080/api/pensioner/validate
+   * 1️⃣  GET  https://202.144.158.3/nga-yoe/api/pensioner/{cid}
+   * 2️⃣  If status ≠ true, POST https://202.144.158.3/nga-yoe/api/pensioner/validate
    * 3️⃣  Success → store CID → /home, otherwise show server message
    */
   private validateCid(cid: string) {
-    const getUrl = `http://localhost:8080/api/pensioner/${cid}`;
-    const postUrl = 'http://localhost:8080/api/pensioner/validate';
+    const getUrl = `https://202.144.158.3/nga-yoe/api/pensioner/${cid}`;
+    const postUrl = 'https://202.144.158.3/nga-yoe/api/pensioner/validate';
 
     console.log('🔍 Hitting GET:', getUrl);
 
@@ -152,5 +152,8 @@ export class LoginPage {
       position: 'top',
     });
     toast.present();
+  }
+  goToHome() {
+    this.router.navigate(['home']);
   }
 }

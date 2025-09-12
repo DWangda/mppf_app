@@ -21,7 +21,10 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
     TranslateModule, // needed for the | translate pipe
   ],
   template: `
-    <div class="ion-padding" style="display: flex; align-items: center;">
+    <div
+      class="ion-padding"
+      style="display: flex; align-items: center; color: #000"
+    >
       <ion-label>{{ 'English' | translate }}</ion-label>
 
       <ion-toggle

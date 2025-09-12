@@ -74,7 +74,7 @@
   text-decoration: none;
 }
 .logo {
-  width: auto;
+  width: 40px;
   height: 40px;
   margin: 0 auto;
   display: block;
@@ -147,15 +147,16 @@
   object-fit: cover;
   border-radius: 16px;
 }
-ion-back-button {
-  --color: #5bd1d7;
-  margin: 10px;
-}
+// ion-back-button {
+//   --color: #5bd1d7;
+//   margin: 10px;
+// }
 /* src/app/pages/user-details/user-details.page.scss */
 .profile-container {
   max-width: 600px;
   margin-top: 20px;
   margin: auto;
+  padding: 10px;
 }
 
 .avatar-section {
@@ -185,34 +186,36 @@ ion-back-button {
 
 .detail-field {
   position: relative;
-  border: 1px solid #ddd;
+  border: 1px solid #787878;
   border-radius: 20px;
   padding: 10px;
   padding-left: 30px;
   padding-right: 30px;
   margin-bottom: 20px;
+  background: transparent;
 
   .field-label {
     position: absolute;
-    top: -10px;
+    top: -18px;
     left: 25px;
-    background: white;
+    background: transparent;
     padding: 0 8px;
     font-size: 0.9rem;
-    color: gray;
+    color: black;
     font-weight: 500;
   }
 
   .field-value {
     padding-top: 5px;
     font-size: 1rem;
-    color: gray;
+    color: #333;
   }
 }
 .detail-header {
   display: flex;
   flex-direction: row;
   justify-content: space-between;
+  color: Black;
   p {
     font-size: 18px;
     font-weight: 700;
@@ -235,13 +238,13 @@ ion-back-button {
   }
 }
 
-/* Dark mode support */
-@media (prefers-color-scheme: dark) {
-  .detail-field {
-    border-color: #444;
+// /* Dark mode support */
+// @media (prefers-color-scheme: dark) {
+//   .detail-field {
+//     border-color: #444;
 
-    .field-label {
-      background: var(--ion-background-color);
-    }
-  }
-}
+//     .field-label {
+//       background: var(--ion-background-color);
+//     }
+//   }
+// }

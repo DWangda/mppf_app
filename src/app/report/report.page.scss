@@ -26,10 +26,10 @@
   text-decoration: none;
 }
 
-ion-back-button {
-  --color: #5bd1d7;
-  margin: 10px;
-}
+// ion-back-button {
+//   --color: #5bd1d7;
+//   margin: 10px;
+// }
 
 .main-content {
   padding: 10px;
@@ -45,6 +45,7 @@ ion-back-button {
   align-content: center;
   justify-content: center;
   align-items: center;
+  color: gray;
 
   border-radius: 10px;
   box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.2);

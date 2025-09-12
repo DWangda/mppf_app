@@ -74,7 +74,7 @@
   text-decoration: none;
 }
 .logo {
-  width: auto;
+  width: 40px;
   height: 40px;
   margin: 0 auto;
   display: block;
@@ -147,10 +147,10 @@
   object-fit: cover;
   border-radius: 16px;
 }
-ion-back-button {
-  --color: #5bd1d7;
-  margin: 10px;
-}
+// ion-back-button {
+//   --color: #5bd1d7;
+//   margin: 10px;
+// }
 /* src/app/pages/user-details/user-details.page.scss */
 .about-container {
   display: flex;
@@ -160,6 +160,7 @@ ion-back-button {
   margin: auto;
   align-items: center;
   align-content: center;
+  padding: 10px;
   img {
     width: 40%;
     height: auto;
@@ -171,8 +172,11 @@ ion-back-button {
 }
 p {
   text-align: justify;
+  color: #333;
 }
-
+h1 {
+  color: #333;
+}
 .avatar-section {
   text-align: center;
   margin-bottom: 30px;

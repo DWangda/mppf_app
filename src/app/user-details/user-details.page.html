@@ -1,5 +1,5 @@
 <div class="ion-page" id="main-content">
-  <ion-header style="border: 0; background: transparent" [translucent]="true">
+  <ion-header style="border: 0; background: transparent">
     <ion-toolbar
       border="none"
       style="
@@ -7,6 +7,8 @@
         justify-content: space-between;
         align-items: center;
         flex-direction: row;
+        height: 80px;
+        padding-top: 32px;
       "
     >
       <ion-buttons slot="start">
@@ -21,10 +23,12 @@
       </ion-buttons>
     </ion-toolbar>
   </ion-header>
-  <ion-content [fullscreen]="true" class="ion-padding">
+  <ion-content [fullscreen]="true" class="bg-waves">
     <div class="profile-container">
       <div class="detail-header">
-        <p>Your Personal Details</p>
+        <p [ngClass]="{ 'dzongkha-style': currentLang === 'dz' }">
+          {{'USERDETAIL.YourPersonalDetails' | translate}}
+        </p>
         <div class="active">
           <img src="assets/contactIcons/active.svg" alt="icon" />
           <p>Active</p>
@@ -33,7 +37,11 @@
 
       <div class="details-container">
         <div class="detail-field">
-          <span class="field-label">Full Name</span>
+          <span
+            class="field-label"
+            [ngClass]="{ 'dzongkha-style': currentLang === 'dz' }"
+            >{{'USERDETAIL.FULLNAME' | translate}}</span
+          >
           <div class="field-value">{{ fullName }}</div>
         </div>
 
@@ -45,45 +53,144 @@
 
         <!-- Address Field -->
         <div class="detail-field">
-          <span class="field-label">ID Number</span>
+          <span
+            class="field-label"
+            [ngClass]="{ 'dzongkha-style': currentLang === 'dz' }"
+            >{{'USERDETAIL.IDNUMBER' | translate}}</span
+          >
           <div class="field-value">{{ cidNumber }}</div>
         </div>
       </div>
-      <div class="detail-header"><p>Pensioner Details</p></div>
+      <div class="detail-header">
+        <p [ngClass]="{ 'dzongkha-style': currentLang === 'dz' }">
+          {{'USERDETAIL.CONTACTDETAILS' | translate}}
+        </p>
+      </div>
       <div class="details-container">
         <div class="detail-field">
-          <span class="field-label">Pension Status</span>
+          <span
+            class="field-label"
+            [ngClass]="{ 'dzongkha-style': currentLang === 'dz' }"
+            >{{'USERDETAIL.MOBILE' | translate}}</span
+          >
+          <div class="field-value">{{ phoneNumber }}</div>
+        </div>
+
+        <!-- Phone Field -->
+        <div class="detail-field">
+          <span
+            class="field-label"
+            [ngClass]="{ 'dzongkha-style': currentLang === 'dz' }"
+            >{{'USERDETAIL.EMAIL' | translate}}</span
+          >
+          <div class="field-value">{{ email }}</div>
+        </div>
+      </div>
+      <div class="detail-header">
+        <p [ngClass]="{ 'dzongkha-style': currentLang === 'dz' }">
+          {{'USERDETAIL.ADDRESS' | translate}}
+        </p>
+      </div>
+      <div class="details-container">
+        <div class="detail-field">
+          <span
+            class="field-label"
+            [ngClass]="{ 'dzongkha-style': currentLang === 'dz' }"
+            >{{'USERDETAIL.VILLAGE' | translate}}</span
+          >
+          <div class="field-value">{{ village }}</div>
+        </div>
+
+        <!-- Phone Field -->
+        <div class="detail-field">
+          <span
+            class="field-label"
+            [ngClass]="{ 'dzongkha-style': currentLang === 'dz' }"
+            >{{'USERDETAIL.GEWOG' | translate}}</span
+          >
+          <div class="field-value">{{ gewog }}</div>
+        </div>
+        <div class="detail-field">
+          <span
+            class="field-label"
+            [ngClass]="{ 'dzongkha-style': currentLang === 'dz' }"
+            >{{'USERDETAIL.DZONGKHAG' | translate}}</span
+          >
+          <div class="field-value">{{ dzongkhag }}</div>
+        </div>
+      </div>
+
+      <div class="detail-header">
+        <p [ngClass]="{ 'dzongkha-style': currentLang === 'dz' }">
+          {{'USERDETAIL.PENSIONERDETAILS' | translate}}
+        </p>
+      </div>
+      <div class="details-container">
+        <div class="detail-field">
+          <span
+            class="field-label"
+            [ngClass]="{ 'dzongkha-style': currentLang === 'dz' }"
+            >{{'USERDETAIL.PENSIONSTATUS' | translate}}</span
+          >
           <div class="field-value">{{pensionStatus}}</div>
         </div>
 
         <!-- Phone Field -->
         <div class="detail-field">
-          <span class="field-label">Pension ID</span>
+          <span
+            class="field-label"
+            [ngClass]="{ 'dzongkha-style': currentLang === 'dz' }"
+            >{{'USERDETAIL.PENSION-ID' | translate}}</span
+          >
           <div class="field-value">{{pensionId}}</div>
         </div>
 
         <!-- Address Field -->
         <div class="detail-field">
-          <span class="field-label">Pension Type</span>
+          <span
+            class="field-label"
+            [ngClass]="{ 'dzongkha-style': currentLang === 'dz' }"
+            >{{'USERDETAIL.PENSIONTYPE' | translate}}</span
+          >
           <div class="field-value">{{pensionType}}</div>
         </div>
         <div class="detail-field">
-          <span class="field-label">Pension Acc</span>
+          <span
+            class="field-label"
+            [ngClass]="{ 'dzongkha-style': currentLang === 'dz' }"
+            >{{'USERDETAIL.PENSIONACCOUNT' | translate}}</span
+          >
           <div class="field-value">{{pensionAccount}}</div>
         </div>
         <div class="detail-field">
-          <span class="field-label">Pension Increment/year</span>
+          <span
+            class="field-label"
+            [ngClass]="{ 'dzongkha-style': currentLang === 'dz' }"
+            >{{'USERDETAIL.PENSIONINCREMENT' | translate}}</span
+          >
           <div class="field-value">{{currentYearIncrementPct }}</div>
         </div>
         <div class="detail-field">
-          <span class="field-label">Monthly Pension Amount</span>
+          <span
+            class="field-label"
+            [ngClass]="{ 'dzongkha-style': currentLang === 'dz' }"
+            >{{'USERDETAIL.MONTHLYPENSION' | translate}}</span
+          >
           <div class="field-value">Nu. {{monthlyPensionAmount}}</div>
         </div>
       </div>
-      <div class="detail-header"><p>Lotedeth Details</p></div>
+      <div class="detail-header">
+        <p [ngClass]="{ 'dzongkha-style': currentLang === 'dz' }">
+          {{'USERDETAIL.LOTEDETHDETAILS' | translate}}
+        </p>
+      </div>
       <div class="details-container">
         <div class="detail-field">
-          <span class="field-label">Lotedeth Member</span>
+          <span
+            class="field-label"
+            [ngClass]="{ 'dzongkha-style': currentLang === 'dz' }"
+            >{{'USERDETAIL.LOTEDETHMEMBER' | translate}}</span
+          >
           <div class="field-value">{{lotedth}}</div>
         </div>
       </div>

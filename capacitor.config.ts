@@ -2,7 +2,7 @@ import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
   appId: 'io.ionic.starter',
-  appName: 'MPPF-App',
+  appName: 'Nga Yoe',
   webDir: 'www',
   plugins: {
     SplashScreen: {

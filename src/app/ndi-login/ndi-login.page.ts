@@ -4,6 +4,7 @@ import { HttpClient } from '@angular/common/http';
 import { LoadingController, ToastController } from '@ionic/angular';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+
 import {
   IonContent,
   IonHeader,
@@ -103,11 +104,23 @@ export class NdiLoginPage implements OnInit, OnDestroy {
   /*──────────────────────────────────────────────────────────*/
   /*                NDI  →  PROOF REQUEST                     */
   /*──────────────────────────────────────────────────────────*/
+  requestProofssss() {
+    console.log('Requesting proof...');
+    this.http.get('https://202.144.158.3/nga-yoe/ndi/proof-request').subscribe(
+      (response) => {
+        console.log(response);
+      },
+      (error) => {
+        console.log(error);
+      }
+    );
+  }
   private async requestProof(type: 'login'): Promise<void> {
+    this.requestProofssss();
     this.loading = true;
 
     // const url = 'http://172.30.78.167:3000/ndiapi/api/proof-request';
-    const url = 'http://localhost:3000/ndiapi/api/proof-request';
+    const url = 'https://202.144.158.3/nga-yoe/ndi/proof-request';
 
     try {
       const response = await this.http.get<ProofReply>(url).toPromise();
@@ -129,43 +142,6 @@ export class NdiLoginPage implements OnInit, OnDestroy {
   /*──────────────────────────────────────────────────────────*/
   /*                NATS  →  LISTENER                         */
   /*──────────────────────────────────────────────────────────*/
-  // private async listenOnNats(threadId: string): Promise<void> {
-  //   const seed = new TextEncoder().encode(
-  //     'SUAPXY7TJFUFE3IX3OEMSLE3JFZJ3FZZRSRSOGSG2ANDIFN77O2MIBHWUM' // staging
-  //   );
-
-  //   const conn = await connect({
-  //     servers: ['https://natsdemoclient.bhutanndi.com'],
-  //     authenticator: nkeyAuthenticator(seed),
-  //   });
-
-  //   const sc = StringCodec();
-  //   this.natsSub = conn.subscribe(threadId);
-
-  //   (async () => {
-  //     for await (const m of this.natsSub!) {
-  //       const msg = JSON.parse(sc.decode(m.data));
-
-  //       /* user cancelled */
-  //       if (msg.data?.type === 'present-proof/rejected') {
-  //         this.denied = true;
-  //         continue;
-  //       }
-
-  //       /* proof presented & verified */
-  //       if (msg.data?.type === 'present-proof/presentation-result') {
-  //         console.log('Proof presented:', msg.data);
-  //         const cid =
-  //           msg.data.requested_presentation.revealed_attrs['ID Number'][0]
-  //             .value;
-  //         await this.checkPensionerApis(cid);
-  //         this.natsSub?.unsubscribe();
-  //         conn.close();
-  //         break;
-  //       }
-  //     }
-  //   })().catch(console.error);
-  // }
 
   private async listenOnNats(threadId: string): Promise<void> {
     const seed = new TextEncoder().encode(
@@ -210,77 +186,13 @@ export class NdiLoginPage implements OnInit, OnDestroy {
   /*──────────────────────────────────────────────────────────*/
   /*             2‑STEP  PENSIONER API CHECK                  */
   /*──────────────────────────────────────────────────────────*/
-  // private async checkPensionerApis(cid: string): Promise<void> {
-  //   const spin = await this.loadingCtrl.create({ message: 'Verifying…' });
-  //   await spin.present();
 
-  //   const getUrl = `http://localhost:8080/api/pensioner/${cid}`;
-  //   const postUrl = `http://localhost:8080/api/pensioner/validate`;
-
-  //   try {
-  //     console.log('🔍 Attempting GET:', getUrl);
-  //     const getResp: any = await this.http.get(getUrl).toPromise();
-  //     console.log('✅ GET response:', getResp);
-
-  //     const isValidGet =
-  //       getResp?.status === true &&
-  //       getResp?.data !== null &&
-  //       getResp?.data?.userStatus === 1;
-
-  //     if (isValidGet) {
-  //       console.log('🎉 GET is valid → login');
-  //       await spin.dismiss();
-  //       this.finaliseLogin(cid);
-  //       return;
-  //     }
-
-  //     // ❌ GET invalid, fallback to POST
-  //     console.warn('⚠️ GET not valid, falling back to POST...');
-  //     await this.fallbackToPost(cid, postUrl, spin);
-  //   } catch (getError) {
-  //     console.error('🚫 GET failed, falling back to POST:', getError);
-  //     await this.fallbackToPost(cid, postUrl, spin);
-  //   }
-  // }
-
-  // private async fallbackToPost(
-  //   cid: string,
-  //   postUrl: string,
-  //   spin: HTMLIonLoadingElement
-  // ): Promise<void> {
-  //   try {
-  //     console.log('📨 Attempting POST:', postUrl);
-  //     const postResp: any = await this.http
-  //       .post(postUrl, { cidNumber: cid })
-  //       .toPromise();
-  //     console.log('📨 POST response:', postResp);
-
-  //     if (postResp?.status === true) {
-  //       console.log('🎉 POST is valid → login');
-  //       await spin.dismiss();
-  //       this.finaliseLogin(cid);
-  //     } else {
-  //       console.warn('❌ POST failed:', postResp?.message);
-  //       await spin.dismiss();
-  //       this.toastMessage(
-  //         postResp?.message ?? 'CID validation failed.',
-  //         'danger'
-  //       );
-  //       this.step = 'welcome';
-  //     }
-  //   } catch (postError) {
-  //     console.error('🚫 POST error:', postError);
-  //     await spin.dismiss();
-  //     this.toastMessage('Unable to verify pensioner.', 'danger');
-  //     this.step = 'welcome';
-  //   }
-  // }
   private async checkPensionerApis(cid: string): Promise<void> {
     const spin = await this.loadingCtrl.create({ message: 'Verifying…' });
     await spin.present();
 
-    const getUrl = `http://localhost:8080/api/pensioner/${cid}`;
-    const postUrl = `http://localhost:8080/api/pensioner/validate`;
+    const getUrl = `https://202.144.158.3/nga-yoe/api/pensioner/${cid}`;
+    const postUrl = `https://202.144.158.3/nga-yoe/api/pensioner/validate`;
 
     try {
       console.log('🔍 Attempting GET:', getUrl);

@@ -112,7 +112,7 @@ export class LivenessPage implements OnInit, OnDestroy {
     this.loading = true;
 
     // const url = 'http://172.30.78.167:3000/ndiapi/api/proof-request';
-    const url = 'http://localhost:3000/ndiapi/api/proof-request-liveness';
+    const url = 'https://202.144.158.3/nga-yoe/ndi/proof-request-liveness';
 
     try {
       const response = await this.http.get<ProofReply>(url).toPromise();
@@ -214,37 +214,36 @@ export class LivenessPage implements OnInit, OnDestroy {
     const storedCid = localStorage.getItem('cidNumber');
     const pensionId = localStorage.getItem('pensionId');
 
-    // Validate if CID matches
-    if (storedCid && storedCid !== cid) {
-      this.toastMessage('CID mismatch. Please try again.', 'danger');
-      this.step = 'welcome';
-      return;
-    }
+    // If CID mismatch, send "Invalid", else "Valid"
+    const livelinessStatus =
+      storedCid && storedCid !== cid ? 'Invalid' : 'Valid';
 
     const spin = await this.loadingCtrl.create({
       message: 'Verifying Liveliness…',
     });
     await spin.present();
 
-    const url = `http://localhost:8080/api/liveliness`;
+    const url = `https://202.144.158.3/nga-yoe/api/liveliness`;
     const payload = {
       pensionId: pensionId,
       cidNumber: cid,
-      livelinessStatus: 'Valid',
+      livelinessStatus: livelinessStatus,
     };
 
     try {
       const response: any = await this.http.post(url, payload).toPromise();
       await spin.dismiss();
 
-      if (response?.status === true) {
+      if (response?.status === true && livelinessStatus === 'Valid') {
+        // ✅ Success path
         this.toastMessage('Liveliness verified successfully', 'success');
         this.finaliseLogin(cid);
-        //       this.router.navigate(['/dashboard'], {
-        //   replaceUrl: true,
-        //   state: { refresh: true, ts: Date.now() }, // ts busts any caching
-        // });
+      } else if (livelinessStatus === 'Invalid') {
+        // ❌ CID mismatch case
+        this.toastMessage('CID mismatched. Please try again.', 'danger');
+        this.step = 'welcome';
       } else {
+        // ❌ Other verification failures
         this.toastMessage(
           response?.message || 'Liveliness verification failed.',
           'danger'
@@ -259,6 +258,56 @@ export class LivenessPage implements OnInit, OnDestroy {
       this.step = 'welcome';
     }
   }
+
+  // private async checkLiveliness(cid: string): Promise<void> {
+  //   const storedCid = localStorage.getItem('cidNumber');
+  //   const pensionId = localStorage.getItem('pensionId');
+
+  //   // Validate if CID matches
+  //   if (storedCid && storedCid !== cid) {
+  //     this.toastMessage('CID mismatch. Please try again.', 'danger');
+  //     this.step = 'welcome';
+  //     return;
+  //   }
+
+  //   const spin = await this.loadingCtrl.create({
+  //     message: 'Verifying Liveliness…',
+  //   });
+  //   await spin.present();
+
+  //   const url = `https://202.144.158.3/nga-yoe/api/liveliness`;
+  //   const payload = {
+  //     pensionId: pensionId,
+  //     cidNumber: cid,
+  //     livelinessStatus: 'Valid',
+  //   };
+
+  //   try {
+  //     const response: any = await this.http.post(url, payload).toPromise();
+  //     await spin.dismiss();
+
+  //     if (response?.status === true) {
+  //       this.toastMessage('Liveliness verified successfully', 'success');
+  //       this.finaliseLogin(cid);
+  //       //       this.router.navigate(['/dashboard'], {
+  //       //   replaceUrl: true,
+  //       //   state: { refresh: true, ts: Date.now() }, // ts busts any caching
+  //       // });
+  //     } else {
+  //       this.toastMessage(
+  //         response?.message || 'Liveliness verification failed.',
+  //         'danger'
+  //       );
+  //       this.step = 'welcome';
+  //     }
+  //   } catch (e: any) {
+  //     await spin.dismiss();
+  //     const errorMsg =
+  //       e?.error?.message || e?.message || 'Server error. Try again later.';
+  //     this.toastMessage(errorMsg, 'danger');
+  //     this.step = 'welcome';
+  //   }
+  // }
   // private async checkLiveliness(cid: string): Promise<void> {
   //   const storedCid = localStorage.getItem('cidNumber');
   //   const pensionId = localStorage.getItem('pensionId'); // Ensure pensionId is saved earlier
@@ -276,7 +325,7 @@ export class LivenessPage implements OnInit, OnDestroy {
   //   });
   //   await spin.present();
 
-  //   const url = `http://localhost:8080/api/liveliness`;
+  //   const url = `https://202.144.158.3/nga-yoe/api/liveliness`;
   //   const payload = {
   //     pensionId: pensionId,
   //     cidNumber: cid,
@@ -307,7 +356,9 @@ export class LivenessPage implements OnInit, OnDestroy {
   private finaliseLogin(cid: string): void {
     localStorage.setItem('cidNumber', cid);
     // …fetch privileges here if required
-    this.router.navigate(['home']);
+    this.router.navigate(['/home'], { replaceUrl: true }).then(() => {
+      window.location.reload(); // refresh after navigation
+    });
   }
 
   /*──────────────────────────────────────────────────────────*/

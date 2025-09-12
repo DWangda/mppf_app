@@ -3,6 +3,8 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
+
 import {
   IonContent,
   IonHeader,
@@ -33,6 +35,7 @@ interface Statement {
     IonSpinner,
     // Ionic
     IonButton,
+    TranslateModule,
     IonButtons,
     IonBackButton,
     IonContent,
@@ -50,8 +53,14 @@ export class StatementPage implements OnInit {
   tdsTable!: ElementRef<HTMLTableElement>;
   statements: Statement[] = [];
   loading = true;
+  currentLang: string;
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient, private translate: TranslateService) {
+    this.currentLang = this.translate.currentLang;
+    this.translate.onLangChange.subscribe(
+      (event) => (this.currentLang = event.lang)
+    );
+  }
 
   ngOnInit(): void {
     // ▸ however you store / retrieve the pensionId:
@@ -61,7 +70,7 @@ export class StatementPage implements OnInit {
       return;
     }
 
-    const url = `http://localhost:8080/api/pension-statements/monthly/${pensionId}`;
+    const url = `https://202.144.158.3/nga-yoe/api/pension-statements/monthly/${pensionId}`;
 
     this.http.get<Statement[]>(url).subscribe({
       next: (data) => {

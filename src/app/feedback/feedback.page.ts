@@ -3,6 +3,8 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient, HttpClientModule } from '@angular/common/http';
 import { Router } from '@angular/router';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
+
 import {
   IonContent,
   IonHeader,
@@ -25,6 +27,8 @@ import {
   imports: [
     CommonModule,
     FormsModule,
+    TranslateModule,
+
     HttpClientModule,
     IonHeader,
     IonToolbar,
@@ -42,8 +46,18 @@ import {
 export class FeedbackPage {
   feedbackType: string = '';
   feedbackMessage: string = '';
+  currentLang: string;
 
-  constructor(private http: HttpClient, private router: Router) {}
+  constructor(
+    private http: HttpClient,
+    private router: Router,
+    private translate: TranslateService
+  ) {
+    this.currentLang = this.translate.currentLang;
+    this.translate.onLangChange.subscribe(
+      (event) => (this.currentLang = event.lang)
+    );
+  }
 
   submitFeedback() {
     console.log('Type:', this.feedbackType);
@@ -55,7 +69,7 @@ export class FeedbackPage {
     };
 
     this.http
-      .post('http://localhost:8080/api/feedbacks', body, {
+      .post('https://202.144.158.3/nga-yoe/api/feedbacks', body, {
         headers: { 'Content-Type': 'application/json' },
       })
       .subscribe({

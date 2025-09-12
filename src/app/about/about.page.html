@@ -1,5 +1,5 @@
 <div class="ion-page" id="main-content">
-  <ion-header style="border: 0; background: transparent" [translucent]="true">
+  <ion-header style="border: 0; background: transparent">
     <ion-toolbar
       border="none"
       style="
@@ -21,19 +21,22 @@
       </ion-buttons>
     </ion-toolbar>
   </ion-header>
-  <ion-content [fullscreen]="true" class="ion-padding">
+  <ion-content [fullscreen]="true" class="bg-waves">
     <div class="about-container">
       <img src="assets/logo.png" alt="" />
-      <h1>About Us</h1>
-      <p>
-        The National Pension and Provident Fund manages retirement benefits for
+      <h1 [ngClass]="{ 'dzongkha-style': currentLang === 'dz' }">
+        {{ 'ABOUT.TITLE' | translate }}
+      </h1>
+      <p [ngClass]="{ 'dzongkha-style': currentLang === 'dz' }">
+        {{ 'ABOUT.DESCRIPTION' | translate }}
+        <!-- The National Pension and Provident Fund manages retirement benefits for
         civil servants, corporate employees and the member of the armed forces.
         Currently, pensioners are not required to verify their identity to prove
         they are alive, which poses substantial risk of income leakage.
         Verification of pensioners lives and income leakage in pension systems
         is a significant issue, leading to financial losses and undermining the
         integrity of pension schemes. Ensuring that pension disbursements reach
-        only the legitimate beneficiaries is crucial.
+        only the legitimate beneficiaries is crucial. -->
       </p>
     </div>
   </ion-content>
