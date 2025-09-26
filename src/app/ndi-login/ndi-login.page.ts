@@ -13,20 +13,22 @@ import {
   IonButton,
   IonSpinner,
   IonList,
-  IonLabel,
-  IonItem,
-  IonIcon,
 } from '@ionic/angular/standalone';
 
-// import { connect, nkeyAuthenticator, StringCodec, Subscription } from 'nats.ws';
 import {
   wsconnect,
   nkeyAuthenticator,
   type Subscription,
 } from '@nats-io/nats-core';
-import { QRCodeComponent } from 'angularx-qrcode'; // ✅ angularx‑qrcode standalone
+import { QRCodeComponent } from 'angularx-qrcode';
 import { TranslateModule } from '@ngx-translate/core';
 import { LanguageToggleComponent } from '../shared/language-toggle.component';
+
+import { firstValueFrom } from 'rxjs';
+import { timeout } from 'rxjs/operators';
+
+// ✅ Official Capacitor HTTP (stable)
+import { Capacitor, CapacitorHttp, HttpResponse } from '@capacitor/core';
 
 interface ProofReply {
   data: {
@@ -42,19 +44,12 @@ interface ProofReply {
   styleUrls: ['./ndi-login.page.scss'],
   standalone: true,
   imports: [
-    /* Ionic standalone building‑blocks */
-    // IonIcon,
-    // IonItem,
-    // IonLabel,
     IonList,
     IonSpinner,
     IonButton,
     IonContent,
-
-    /* Angular basics */
     CommonModule,
     FormsModule,
-    /* QR code (standalone declarable) */
     QRCodeComponent,
     TranslateModule,
     LanguageToggleComponent,
@@ -67,8 +62,8 @@ export class NdiLoginPage implements OnInit, OnDestroy {
   deeplink = '';
   denied = false;
 
-  /** ───────── NATS ───────── */
   private natsSub?: Subscription;
+  private readonly isNative = Capacitor.isNativePlatform();
 
   constructor(
     private http: HttpClient,
@@ -78,15 +73,14 @@ export class NdiLoginPage implements OnInit, OnDestroy {
   ) {}
 
   /*──────────────────────────────────────────────────────────*/
-  /*                      LIFE‑CYCLE                          */
+  /*                      LIFE-CYCLE                          */
   /*──────────────────────────────────────────────────────────*/
   ngOnInit(): void {
-    /* Clean local/session storage every time this page loads */
     ['userCode', 'role', 'authToken'].forEach((k) =>
       localStorage.removeItem(k)
     );
     sessionStorage.clear();
-    history.pushState(null, '', location.href); // block browser Back
+    history.pushState(null, '', location.href);
   }
 
   ngOnDestroy(): void {
@@ -102,37 +96,29 @@ export class NdiLoginPage implements OnInit, OnDestroy {
   }
 
   /*──────────────────────────────────────────────────────────*/
-  /*                NDI  →  PROOF REQUEST                     */
+  /*                NDI  →  PROOF REQUEST                     */
   /*──────────────────────────────────────────────────────────*/
-  requestProofssss() {
-    console.log('Requesting proof...');
-    this.http.get('https://202.144.158.3/nga-yoe/ndi/proof-request').subscribe(
-      (response) => {
-        console.log(response);
-      },
-      (error) => {
-        console.log(error);
-      }
-    );
-  }
-  private async requestProof(type: 'login'): Promise<void> {
-    this.requestProofssss();
+  private async requestProof(_type: 'login'): Promise<void> {
     this.loading = true;
-
-    // const url = 'http://172.30.78.167:3000/ndiapi/api/proof-request';
-    const url = 'https://202.144.158.3/nga-yoe/ndi/proof-request';
-
+    const url = 'https://pensionapp.nppf.org.bt/ndi/proof-request';
     try {
-      const response = await this.http.get<ProofReply>(url).toPromise();
-      if (!response || !response.data) {
-        throw new Error('No proof reply data');
-      }
+      console.log(this.isNative ? '🔍 [Native] GET:' : '🔍 [Web] GET:', url);
+
+      const response = await this.getJson<ProofReply>(url);
+      if (!response?.data) throw new Error('No proof reply data');
+
       this.proofRequestUrl = response.data.proofRequestURL;
       this.deeplink = response.data.deepLinkURL;
 
       await this.listenOnNats(response.data.proofRequestThreadId);
-    } catch (e) {
-      this.toastMessage('Failed to obtain proof‑request', 'danger');
+    } catch (e: any) {
+      console.error('❌ proof-request failed:', e);
+      await this.toastMessage(
+        e?.message?.includes('Unknown Error')
+          ? 'Network/SSL issue. Please try again.'
+          : 'Failed to obtain proof-request',
+        'danger'
+      );
       this.step = 'welcome';
     } finally {
       this.loading = false;
@@ -142,14 +128,13 @@ export class NdiLoginPage implements OnInit, OnDestroy {
   /*──────────────────────────────────────────────────────────*/
   /*                NATS  →  LISTENER                         */
   /*──────────────────────────────────────────────────────────*/
-
   private async listenOnNats(threadId: string): Promise<void> {
     const seed = new TextEncoder().encode(
       'SUAPXY7TJFUFE3IX3OEMSLE3JFZJ3FZZRSRSOGSG2ANDIFN77O2MIBHWUM'
     );
 
     const conn = await wsconnect({
-      servers: 'wss://natsdemoclient.bhutanndi.com', // WebSocket URL
+      servers: 'wss://natsdemoclient.bhutanndi.com',
       authenticator: nkeyAuthenticator(seed),
     });
 
@@ -157,12 +142,11 @@ export class NdiLoginPage implements OnInit, OnDestroy {
 
     (async () => {
       for await (const m of this.natsSub!) {
-        // v3: decode without StringCodec
         let msg: any;
         try {
-          msg = m.json<any>(); // parses JSON payloads
+          msg = m.json<any>();
         } catch {
-          msg = JSON.parse(m.string()); // fallback if needed
+          msg = JSON.parse(m.string());
         }
 
         if (msg?.data?.type === 'present-proof/rejected') {
@@ -184,25 +168,23 @@ export class NdiLoginPage implements OnInit, OnDestroy {
   }
 
   /*──────────────────────────────────────────────────────────*/
-  /*             2‑STEP  PENSIONER API CHECK                  */
+  /*             2-STEP  PENSIONER API CHECK                  */
   /*──────────────────────────────────────────────────────────*/
-
   private async checkPensionerApis(cid: string): Promise<void> {
     const spin = await this.loadingCtrl.create({ message: 'Verifying…' });
     await spin.present();
 
-    const getUrl = `https://202.144.158.3/nga-yoe/api/pensioner/${cid}`;
-    const postUrl = `https://202.144.158.3/nga-yoe/api/pensioner/validate`;
+    const getUrl = `https://pensionapp.nppf.org.bt/api/pensioner/${cid}`;
+    const postUrl = `https://pensionapp.nppf.org.bt/api/pensioner/validate`;
 
     try {
-      console.log('🔍 Attempting GET:', getUrl);
-      const getResp: any = await this.http.get(getUrl).toPromise();
+      console.log(this.isNative ? '🔍 [Native] GET:' : '🔍 [Web] GET:', getUrl);
+      const getResp: any = await this.getJson<any>(getUrl);
       console.log('✅ GET response:', getResp);
 
       const statusOk = getResp?.status === true;
       const userStatus = Number(getResp?.data?.userStatus);
 
-      // store status hints for later screens (e.g., liveness)
       if (getResp?.data) {
         const ps = String(
           getResp.data.pensionStatus ??
@@ -217,17 +199,16 @@ export class NdiLoginPage implements OnInit, OnDestroy {
 
       // ✅ Active → login
       if (statusOk && userStatus === 1) {
-        console.log('🎉 GET is valid → login');
         await spin.dismiss();
         this.finaliseLogin(cid);
         return;
       }
 
-      // ⛔ Disabled/non-active → message and STOP (no POST fallback)
+      // ⛔ Disabled/non-active → message and STOP
       if (statusOk && Number.isFinite(userStatus) && userStatus !== 1) {
         await spin.dismiss();
         await this.toastMessage(
-          'Your User Account has been disabled, Please contact NFFP admin for further assistance.',
+          'Your User Account has been disabled, Please contact NPPF admin for further assistance.',
           'danger'
         );
         this.step = 'welcome';
@@ -238,7 +219,7 @@ export class NdiLoginPage implements OnInit, OnDestroy {
       console.warn('⚠️ GET not valid, falling back to POST…');
       await this.fallbackToPost(cid, postUrl, spin);
     } catch (getError) {
-      console.error('🚫 GET failed, falling back to POST:', getError);
+      console.error('GET failed, falling back to POST:', getError);
       await this.fallbackToPost(cid, postUrl, spin);
     }
   }
@@ -249,16 +230,19 @@ export class NdiLoginPage implements OnInit, OnDestroy {
     spin: HTMLIonLoadingElement
   ): Promise<void> {
     try {
-      console.log('📨 Attempting POST:', postUrl);
-      const postResp: any = await this.http
-        .post(postUrl, { cidNumber: cid })
-        .toPromise();
+      console.log(
+        this.isNative ? '📨 [Native] POST:' : '📨 [Web] POST:',
+        postUrl
+      );
+      const postResp: any = await this.postJson<any>(postUrl, {
+        cid,
+        cidNumber: cid,
+      });
       console.log('📨 POST response:', postResp);
 
       const statusOk = postResp?.status === true;
       const userStatus = Number(postResp?.data?.userStatus);
 
-      // store status hints if provided
       if (postResp?.data) {
         const ps = String(
           postResp.data.pensionStatus ??
@@ -271,36 +255,37 @@ export class NdiLoginPage implements OnInit, OnDestroy {
         }
       }
 
-      // ✅ Active → login
       if (statusOk && userStatus === 1) {
         await spin.dismiss();
-        console.log('🎉 POST valid → login');
         this.finaliseLogin(cid);
         return;
       }
 
-      // ⛔ Disabled/non-active → message and STOP
       if (statusOk && Number.isFinite(userStatus) && userStatus !== 1) {
         await spin.dismiss();
         await this.toastMessage(
-          'Your User Account has been disabled, Please contact NFFP admin for further assistance.',
+          'Your User Account has been disabled, Please contact NPPF admin for further assistance.',
           'danger'
         );
         this.step = 'welcome';
         return;
       }
 
-      // ❌ POST said not ok
       await spin.dismiss();
       await this.toastMessage(
         postResp?.message ?? 'CID validation failed.',
         'danger'
       );
       this.step = 'welcome';
-    } catch (postError) {
+    } catch (postError: any) {
       console.error('🚫 POST error:', postError);
       await spin.dismiss();
-      this.toastMessage('Unable to verify pensioner.', 'danger');
+      await this.toastMessage(
+        postError?.message?.includes('Unknown Error')
+          ? 'Network/SSL issue. Please try again.'
+          : 'Unable to verify pensioner.',
+        'danger'
+      );
       this.step = 'welcome';
     }
   }
@@ -310,8 +295,6 @@ export class NdiLoginPage implements OnInit, OnDestroy {
   /*──────────────────────────────────────────────────────────*/
   private finaliseLogin(cid: string): void {
     localStorage.setItem('cidNumber', cid);
-    // localStorage.setPensionStatus("pentionStatus", pensionStatus)
-    // …fetch privileges here if required
     this.router.navigate(['home']);
   }
 
@@ -319,22 +302,72 @@ export class NdiLoginPage implements OnInit, OnDestroy {
   /*                        HELPERS                           */
   /*──────────────────────────────────────────────────────────*/
   async toastMessage(msg: string, color: 'success' | 'danger'): Promise<void> {
-    const t = await this.toast.create({ message: msg, duration: 3000, color });
+    const t = await this.toast.create({
+      message: msg,
+      duration: 3000,
+      color,
+      position: 'top',
+    });
     t.present();
   }
 
-  /* open Bhutan NDI Wallet on mobile */
   openDeeplink(): void {
-    window.open(this.deeplink, '_self');
+    // Prefer in-place navigation to trigger the native app
+    try {
+      window.location.href = this.deeplink || '';
+    } catch {
+      window.open(this.deeplink || '', '_self');
+    }
   }
 
-  /* re‑generate QR after “Access Denied” */
   async tryAgain(): Promise<void> {
     this.denied = false;
     await this.requestProof('login');
   }
+
   openVideoGuide() {
-    const videoUrl = 'https://www.youtube.com/@BhutanNDI'; // Replace with actual video URL
-    window.open(videoUrl, '_blank');
+    window.open('https://www.youtube.com/@BhutanNDI', '_blank');
+  }
+
+  /* --------------------------- HTTP helpers --------------------------- */
+  // Use CapacitorHttp on device (no browser CORS), HttpClient on web.
+  private async getJson<T>(url: string): Promise<T> {
+    if (this.isNative) {
+      const res: HttpResponse = await CapacitorHttp.get({
+        url,
+        connectTimeout: 15000,
+        readTimeout: 15000,
+      });
+      const ct =
+        res.headers?.['content-type'] || res.headers?.['Content-Type'] || '';
+      const data =
+        typeof res.data === 'string' && ct.includes('application/json')
+          ? JSON.parse(res.data as string)
+          : res.data;
+      return (data ?? {}) as T;
+    }
+    return await firstValueFrom(this.http.get<T>(url).pipe(timeout(12000)));
+  }
+
+  private async postJson<T>(url: string, body: any): Promise<T> {
+    if (this.isNative) {
+      const res: HttpResponse = await CapacitorHttp.post({
+        url,
+        data: body,
+        headers: { 'Content-Type': 'application/json' },
+        connectTimeout: 15000,
+        readTimeout: 15000,
+      });
+      const ct =
+        res.headers?.['content-type'] || res.headers?.['Content-Type'] || '';
+      const data =
+        typeof res.data === 'string' && ct.includes('application/json')
+          ? JSON.parse(res.data as string)
+          : res.data;
+      return (data ?? {}) as T;
+    }
+    return await firstValueFrom(
+      this.http.post<T>(url, body).pipe(timeout(12000))
+    );
   }
 }

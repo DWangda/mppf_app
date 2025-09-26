@@ -234,7 +234,9 @@
       <ng-template #deniedTpl>
         <ion-spinner *ngIf="loading"></ion-spinner>
         <h3 class="ion-text-danger"></h3>
-        <ion-button (click)="tryAgain()">Try again</ion-button>
+        <ion-button class="ion-text-danger" (click)="tryAgain()"
+          >Try again</ion-button
+        >
       </ng-template>
     </div>
     <ion-button fill="clear" color="medium" (click)="step = 'welcome'">

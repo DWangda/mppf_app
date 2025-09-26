@@ -98,7 +98,7 @@ interface LivelinessApi {
 export class HomePage implements OnInit, OnDestroy {
   @ViewChild('tdsTable', { static: false })
   tdsTable!: ElementRef<HTMLTableElement>;
-  // userName1 = localStorage.getItem('name') ?? '';
+  userName1 = localStorage.getItem('name') ?? '';
 
   statements: Statement[] = [];
   tdsStatements: TDSStatement[] = [];
@@ -183,7 +183,7 @@ export class HomePage implements OnInit, OnDestroy {
       return;
     }
 
-    const url = `https://202.144.158.3/nga-yoe/api/plv-users/by-cid/${encodeURIComponent(
+    const url = `https://pensionapp.nppf.org.bt/api/plv-users/by-cid/${encodeURIComponent(
       cid
     )}`;
     this.http.get<any>(url).subscribe({
@@ -227,7 +227,7 @@ export class HomePage implements OnInit, OnDestroy {
   // --------------------------
   private fetchStatements(pid: string) {
     if (!pid) return;
-    const url = `https://202.144.158.3/nga-yoe/api/pension-statements/monthly/${encodeURIComponent(
+    const url = `https://pensionapp.nppf.org.bt/api/pension-statements/monthly/${encodeURIComponent(
       pid
     )}`;
     this.http.get<Statement[]>(url).subscribe({
@@ -244,7 +244,7 @@ export class HomePage implements OnInit, OnDestroy {
 
   private fetchTDS(pid: string) {
     if (!pid) return;
-    const url = `https://202.144.158.3/nga-yoe/api/pension-statements/${encodeURIComponent(
+    const url = `https://pensionapp.nppf.org.bt/api/pension-statements/${encodeURIComponent(
       pid
     )}`;
     this.http
@@ -294,7 +294,7 @@ export class HomePage implements OnInit, OnDestroy {
       return;
     }
 
-    const url = `https://202.144.158.3/nga-yoe/api/liveliness/${encodeURIComponent(
+    const url = `https://pensionapp.nppf.org.bt/api/liveliness/${encodeURIComponent(
       pensionId
     )}`;
     this.http.get<LivelinessApi>(url).subscribe({
@@ -378,11 +378,11 @@ export class HomePage implements OnInit, OnDestroy {
       (banner.resourceType || '').toLowerCase() === 'image'
         ? 'images'
         : 'videos';
-    return `https://202.144.158.3/nga-yoe/${folder}/${fileName}`;
+    return `https://pensionapp.nppf.org.bt/${folder}/${fileName}`;
   }
 
   fetchBanners() {
-    this.http.get<any>('https://202.144.158.3/nga-yoe/api/banner').subscribe({
+    this.http.get<any>('https://pensionapp.nppf.org.bt/api/banner').subscribe({
       next: (res) => {
         const data: any[] = Array.isArray(res?.data) ? res.data : [];
 
@@ -480,7 +480,7 @@ export class HomePage implements OnInit, OnDestroy {
   // =========================
   checkNewNotifications() {
     this.http
-      .get<any[]>('https://202.144.158.3/nga-yoe/api/notifications')
+      .get<any[]>('https://pensionapp.nppf.org.bt/api/notifications')
       .subscribe({
         next: (data) => (this.hasNewNotification = !!(data && data.length > 0)),
         error: () => (this.hasNewNotification = false),

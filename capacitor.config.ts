@@ -1,7 +1,7 @@
 import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'io.ionic.starter',
+  appId: 'bt.ngn.ngayoe',
   appName: 'Nga Yoe',
   webDir: 'www',
   plugins: {

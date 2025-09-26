@@ -79,7 +79,7 @@ export class NotificationPage implements OnInit {
 
   private fetchNotifications(done?: () => void): void {
     this.loading = true;
-    const url = 'https://202.144.158.3/nga-yoe/api/notifications';
+    const url = 'https://pensionapp.nppf.org.bt/api/notifications';
 
     this.http.get<{ status: boolean; data: Notification[] }>(url).subscribe({
       next: (res) => {

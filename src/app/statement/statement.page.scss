@@ -9,6 +9,34 @@ table {
   font-size: 0.9rem;
   color: #000;
 }
+.tds-content {
+  padding: 16px;
+  font-family: "Arial", sans-serif;
+
+  .user-info p {
+    margin: 2px 0;
+    font-size: 14px;
+  }
+
+  .tds-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 15px;
+    font-size: 13px;
+  }
+
+  .tds-table th,
+  .tds-table td {
+    border: 1px solid #000;
+    padding: 6px 8px;
+    text-align: center;
+    color: #333;
+  }
+
+  .export-wrapper {
+    margin-top: 20px;
+  }
+}
 .logo {
   width: 40px;
   height: 40px;

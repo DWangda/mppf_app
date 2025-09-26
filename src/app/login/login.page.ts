@@ -16,8 +16,11 @@ import { HttpClient } from '@angular/common/http';
 import { LanguageToggleComponent } from '../shared/language-toggle.component';
 import { TranslateModule } from '@ngx-translate/core';
 
-import { of } from 'rxjs';
-import { switchMap, catchError } from 'rxjs/operators';
+import { firstValueFrom } from 'rxjs';
+import { timeout } from 'rxjs/operators';
+
+// ✅ Official Capacitor HTTP (stable) to bypass web CORS in APK
+import { Capacitor, CapacitorHttp, HttpResponse } from '@capacitor/core';
 
 @Component({
   selector: 'app-login',
@@ -35,6 +38,9 @@ import { switchMap, catchError } from 'rxjs/operators';
   ],
 })
 export class LoginPage {
+  private readonly isNative = Capacitor.isNativePlatform();
+  private loggingIn = false;
+
   constructor(
     private router: Router,
     private alertCtrl: AlertController,
@@ -42,8 +48,9 @@ export class LoginPage {
     private http: HttpClient
   ) {}
 
-  /** Triggered by the “Login with Bhutan NDI” button */
+  /** Triggered by the “Login with Bhutan NDI” button */
   onLogin() {
+    if (this.loggingIn) return;
     this.presentCidPrompt();
   }
 
@@ -78,70 +85,125 @@ export class LoginPage {
   }
 
   /**
-   * 1️⃣  GET  https://202.144.158.3/nga-yoe/api/pensioner/{cid}
-   * 2️⃣  If status ≠ true, POST https://202.144.158.3/nga-yoe/api/pensioner/validate
+   * 1️⃣  GET  https://pensionapp.nppf.org.bt/api/pensioner/{cid}
+   * 2️⃣  If status ≠ true, POST https://pensionapp.nppf.org.bt/api/pensioner/validate
    * 3️⃣  Success → store CID → /home, otherwise show server message
    */
-  private validateCid(cid: string) {
-    const getUrl = `https://202.144.158.3/nga-yoe/api/pensioner/${cid}`;
-    const postUrl = 'https://202.144.158.3/nga-yoe/api/pensioner/validate';
+  private async validateCid(cid: string) {
+    if (this.loggingIn) return;
+    this.loggingIn = true;
 
-    console.log('🔍 Hitting GET:', getUrl);
+    const getUrl = `https://pensionapp.nppf.org.bt/api/pensioner/${cid}`;
+    const postUrl = 'https://pensionapp.nppf.org.bt/api/pensioner/validate';
 
-    this.http.get<any>(getUrl).subscribe({
-      next: (resGet) => {
-        console.log('✅ GET response:', resGet);
+    try {
+      console.log(this.isNative ? '🔍 [Native] GET:' : '🔍 [Web] GET:', getUrl);
 
-        const statusOk = resGet?.status === true;
-        const userStatus = Number(resGet?.data?.userStatus); // handles "1" or 1
+      const resGet: any = await this.getJson<any>(getUrl);
+      console.log('✅ GET response:', resGet);
 
-        // ✅ Active user → login
-        if (statusOk && userStatus === 1) {
-          console.log('🎉 GET valid → login');
-          localStorage.setItem('cidNumber', cid);
-          this.router.navigate(['home']);
-          return;
-        }
+      const statusOk = resGet?.status === true;
+      const userStatus = Number(resGet?.data?.userStatus); // handles "1" or 1
 
-        // ⛔ Disabled or non-active user → show message and STOP
-        if (statusOk && !Number.isNaN(userStatus) && userStatus !== 1) {
-          const msg = 'Your account is disabled, plz contact NFFP admin';
-          this.presentToast(msg);
-          return; // do not attempt POST
-        }
+      // ✅ Active user → login
+      if (statusOk && userStatus === 1) {
+        console.log('🎉 GET valid → login');
+        localStorage.setItem('cidNumber', cid);
+        this.router.navigate(['home']);
+        return;
+      }
 
-        // ❗ Anything else (e.g., missing data / status false) → try POST fallback
-        console.log('⚠️ GET returned false or invalid data → trying POST');
-        this.hitPostValidate(cid, postUrl);
-      },
-      error: (errGet) => {
-        console.error('🚫 GET error:', errGet);
-        console.log('🔁 Trying POST fallback');
-        this.hitPostValidate(cid, postUrl);
-      },
-    });
+      // ⛔ Disabled or non-active user → show message and STOP
+      if (statusOk && !Number.isNaN(userStatus) && userStatus !== 1) {
+        const msg = 'Your account is disabled, please contact NPPF admin';
+        this.presentToast(msg);
+        return; // do not attempt POST
+      }
+
+      // ❗ Anything else (e.g., missing data / status false) → try POST fallback
+      console.log('⚠️ GET returned false or invalid data → trying POST');
+      await this.hitPostValidate(cid, postUrl);
+    } catch (errGet: any) {
+      console.error('🚫 GET error:', errGet);
+      console.log('🔁 Trying POST fallback');
+      await this.hitPostValidate(cid, postUrl);
+    } finally {
+      this.loggingIn = false;
+    }
   }
 
-  private hitPostValidate(cid: string, postUrl: string) {
-    this.http.post<any>(postUrl, { cidNumber: cid }).subscribe({
-      next: (resPost) => {
-        console.log('📨 POST response:', resPost);
-        if (resPost?.status === true) {
-          console.log('🎉 POST valid → login');
-          localStorage.setItem('cidNumber', cid);
-          this.router.navigate(['home']);
-        } else {
-          console.warn('❌ POST failed:', resPost?.message);
-          this.presentToast(resPost?.message ?? 'CID validation failed.');
-        }
-      },
-      error: (errPost) => {
-        console.error('🚫 POST error:', errPost);
-        const msg =
-          errPost?.error?.message || errPost?.message || 'POST failed.';
-        this.presentToast(msg);
-      },
-    });
+  private async hitPostValidate(cid: string, postUrl: string) {
+    try {
+      console.log(
+        this.isNative ? '📨 [Native] POST:' : '📨 [Web] POST:',
+        postUrl
+      );
+      // Send both keys so either server contract works
+      const resPost: any = await this.postJson<any>(postUrl, {
+        cid,
+        cidNumber: cid,
+      });
+      console.log('📨 POST response:', resPost);
+
+      if (resPost?.status === true) {
+        console.log('🎉 POST valid → login');
+        localStorage.setItem('cidNumber', cid);
+        this.router.navigate(['home']);
+      } else {
+        console.warn('❌ POST failed:', resPost?.message);
+        this.presentToast(resPost?.message ?? 'CID validation failed.');
+      }
+    } catch (errPost: any) {
+      console.error('🚫 POST error:', errPost);
+      const msg = errPost?.data?.message || errPost?.message || 'POST failed.';
+      this.presentToast(
+        /Unknown Error|status:\s*0/i.test(String(msg))
+          ? 'Network/SSL issue. Please try again.'
+          : msg
+      );
+    }
+  }
+
+  /* --------------------------- HTTP helpers --------------------------- */
+  // Use CapacitorHttp on device (no browser CORS), HttpClient on web.
+  private async getJson<T>(url: string): Promise<T> {
+    if (this.isNative) {
+      const res: HttpResponse = await CapacitorHttp.get({
+        url,
+        connectTimeout: 15000,
+        readTimeout: 15000,
+      });
+      const ct =
+        res.headers?.['content-type'] || res.headers?.['Content-Type'] || '';
+      const data =
+        typeof res.data === 'string' && ct.includes('application/json')
+          ? JSON.parse(res.data as string)
+          : res.data;
+      return (data ?? {}) as T;
+    }
+    return await firstValueFrom(this.http.get<T>(url).pipe(timeout(12000)));
+  }
+
+  private async postJson<T>(url: string, body: any): Promise<T> {
+    if (this.isNative) {
+      const res: HttpResponse = await CapacitorHttp.post({
+        url,
+        data: body,
+        headers: { 'Content-Type': 'application/json' },
+        connectTimeout: 15000,
+        readTimeout: 15000,
+      });
+      const ct =
+        res.headers?.['content-type'] || res.headers?.['Content-Type'] || '';
+      const data =
+        typeof res.data === 'string' && ct.includes('application/json')
+          ? JSON.parse(res.data as string)
+          : res.data;
+      return (data ?? {}) as T;
+    }
+    return await firstValueFrom(
+      this.http.post<T>(url, body).pipe(timeout(12000))
+    );
   }
 
   /** Small toast helper */
@@ -153,6 +215,7 @@ export class LoginPage {
     });
     toast.present();
   }
+
   goToHome() {
     this.router.navigate(['home']);
   }

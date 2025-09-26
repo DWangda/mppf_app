@@ -53,7 +53,7 @@ export class ContactDetailsPage implements OnInit {
       return;
     }
 
-    const url = `https://202.144.158.3/nga-yoe/api/plv-users/contact-details/${cid}`;
+    const url = `https://pensionapp.nppf.org.bt/api/plv-users/contact-details/${cid}`;
     this.http.get<any>(url).subscribe({
       next: (res) => {
         const cond: ContactDetails | undefined = res?.status

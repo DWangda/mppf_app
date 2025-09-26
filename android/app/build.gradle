@@ -1,10 +1,10 @@
 apply plugin: 'com.android.application'
 
 android {
-    namespace "io.ionic.starter"
+    namespace "bt.ngn.ngayoe"
     compileSdk rootProject.ext.compileSdkVersion
     defaultConfig {
-        applicationId "io.ionic.starter"
+        applicationId "bt.ngn.ngayoe"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1
@@ -16,14 +16,7 @@ android {
             ignoreAssetsPattern '!.svn:!.git:!.ds_store:!*.scc:.*:!CVS:!thumbs.db:!picasa.ini:!*~'
         }
     }
-    buildTypes {
-        release {
-            minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
-        }
-    }
-    
-     signingConfigs {
+      signingConfigs {
         release {
             storeFile file("D:/important/nppfApp-key.jks")
             storePassword "nppfApp123"
@@ -31,8 +24,7 @@ android {
             keyPassword "nppfApp123"
         }
     }
-
-    buildTypes {
+  buildTypes {
         release {
             signingConfig signingConfigs.release
             minifyEnabled false

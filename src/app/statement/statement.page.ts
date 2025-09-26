@@ -70,7 +70,7 @@ export class StatementPage implements OnInit {
       return;
     }
 
-    const url = `https://202.144.158.3/nga-yoe/api/pension-statements/monthly/${pensionId}`;
+    const url = `https://pensionapp.nppf.org.bt/api/pension-statements/monthly/${pensionId}`;
 
     this.http.get<Statement[]>(url).subscribe({
       next: (data) => {

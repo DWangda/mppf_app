@@ -84,7 +84,7 @@ export class UserDetailsPage implements OnInit {
   //     return;
   //   }
 
-  //   const url = `https://202.144.158.3/nga-yoe/api/pension-scheme-details/${cid}`;
+  //   const url = `https://pensionapp.nppf.org.bt/api/pension-scheme-details/${cid}`;
 
   //   this.http.get<any>(url).subscribe({
   //     next: (res) => {
@@ -120,7 +120,7 @@ export class UserDetailsPage implements OnInit {
       return;
     }
 
-    const url = `https://202.144.158.3/nga-yoe/api/pension-scheme-details/by-cid/${cid}`;
+    const url = `https://pensionapp.nppf.org.bt/api/pension-scheme-details/by-cid/${cid}`;
 
     this.http.get<any>(url).subscribe({
       next: (res) => {
@@ -151,7 +151,7 @@ export class UserDetailsPage implements OnInit {
           // 🔽 Call the lotedth API using the fetched pensionId
           this.http
             .get<any>(
-              `https://202.144.158.3/nga-yoe/api/lotedth/check/${dto.pensionId}`
+              `https://pensionapp.nppf.org.bt/api/lotedth/check/${dto.pensionId}`
             )
             .subscribe({
               next: (lotedthRes) => {
@@ -167,7 +167,7 @@ export class UserDetailsPage implements OnInit {
       },
       error: () => this.resetFields(),
     });
-    const url1 = `https://202.144.158.3/nga-yoe/api/plv-users/contact-details/${cid}`;
+    const url1 = `https://pensionapp.nppf.org.bt/api/plv-users/contact-details/${cid}`;
     this.http.get<any>(url1).subscribe({
       next: (res) => {
         const cond: ContactDetails | undefined = res?.status

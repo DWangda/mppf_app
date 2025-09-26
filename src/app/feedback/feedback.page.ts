@@ -69,7 +69,7 @@ export class FeedbackPage {
     };
 
     this.http
-      .post('https://202.144.158.3/nga-yoe/api/feedbacks', body, {
+      .post('https://pensionapp.nppf.org.bt/api/feedbacks', body, {
         headers: { 'Content-Type': 'application/json' },
       })
       .subscribe({

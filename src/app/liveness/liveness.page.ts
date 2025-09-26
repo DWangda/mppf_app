@@ -112,7 +112,7 @@ export class LivenessPage implements OnInit, OnDestroy {
     this.loading = true;
 
     // const url = 'http://172.30.78.167:3000/ndiapi/api/proof-request';
-    const url = 'https://202.144.158.3/nga-yoe/ndi/proof-request-liveness';
+    const url = 'https://pensionapp.nppf.org.bt/ndi/proof-request-liveness';
 
     try {
       const response = await this.http.get<ProofReply>(url).toPromise();
@@ -223,7 +223,7 @@ export class LivenessPage implements OnInit, OnDestroy {
     });
     await spin.present();
 
-    const url = `https://202.144.158.3/nga-yoe/api/liveliness`;
+    const url = `https://pensionapp.nppf.org.bt/api/liveliness`;
     const payload = {
       pensionId: pensionId,
       cidNumber: cid,
@@ -275,7 +275,7 @@ export class LivenessPage implements OnInit, OnDestroy {
   //   });
   //   await spin.present();
 
-  //   const url = `https://202.144.158.3/nga-yoe/api/liveliness`;
+  //   const url = `https://pensionapp.nppf.org.bt/api/liveliness`;
   //   const payload = {
   //     pensionId: pensionId,
   //     cidNumber: cid,
@@ -325,7 +325,7 @@ export class LivenessPage implements OnInit, OnDestroy {
   //   });
   //   await spin.present();
 
-  //   const url = `https://202.144.158.3/nga-yoe/api/liveliness`;
+  //   const url = `https://pensionapp.nppf.org.bt/api/liveliness`;
   //   const payload = {
   //     pensionId: pensionId,
   //     cidNumber: cid,

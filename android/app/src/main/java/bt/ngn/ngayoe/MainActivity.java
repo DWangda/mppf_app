@@ -1,4 +1,4 @@
-package io.ionic.starter;
+package bt.ngn.ngayoe;
 
 import com.getcapacitor.BridgeActivity;
 
