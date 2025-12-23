@@ -21,6 +21,12 @@ const config: CapacitorConfig = {
       layoutName: 'launch_screen',
       useDialog: true,
     },
+    CustomURLScheme: {
+      scheme: 'ngayoe', // this becomes "ngayoe://"
+      host: 'open',
+      androidScheme: 'ngayoe',
+      iosScheme: 'ngayoe',
+    },
   },
 };
 
