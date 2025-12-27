@@ -139,7 +139,7 @@
         justify-content: space-between;
         align-items: center;
         flex-direction: row;
-        padding-top: 30px;
+        padding-top: 50px;
       "
     >
       <ion-buttons slot="start">
@@ -186,7 +186,7 @@
       <div class="time">
         <h1>{{ livelinessMessage }}</h1>
       </div>
-      <div class="button-group">
+      <div class="button-group" *ngIf="!isLivelinessValid">
         <ion-button
           (click)="isLivenessEnabled && goToLiveness()"
           [class.disabled]="!isLivenessEnabled"
@@ -213,7 +213,7 @@
             style="font-size: 18px; font-weight: 400"
             [ngClass]="{ 'dzongkha-style': currentLang === 'dz' }"
           >
-            {{'LIVINESS.BUTTON' | translate}}
+            {{ 'LIVINESS.BUTTON' | translate }}
           </p>
         </ion-button>
       </div>
@@ -297,11 +297,7 @@
                       "
                     >
                       <p
-                        style="
-                          font-size: 18px;
-                          font-weight: 400;
-                          color: #d1d1d1;
-                        "
+                        style="font-size: 18px; font-weight: 400; color: #fff"
                         [ngClass]="{ 'dzongkha-style': currentLang === 'dz' }"
                       >
                         {{'USERDETAIL.TITLE' | translate}}

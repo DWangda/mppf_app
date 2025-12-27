@@ -30,7 +30,7 @@ import { addIcons } from 'ionicons';
 import { heart, calendar, musicalNote, notifications } from 'ionicons/icons';
 import { Router } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { HttpClient, HttpClientModule } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 
 // Types
 interface Statement {
@@ -58,7 +58,7 @@ interface LivelinessApi {
   data?: {
     pensionId: string;
     cidNumber: string;
-    livelinessStatus: string;
+    livelinessStatus: string; // <-- this is what we use now
     biometricDate: string;
     validity: string;
     testMonth: string;
@@ -98,6 +98,7 @@ interface LivelinessApi {
 export class HomePage implements OnInit, OnDestroy {
   @ViewChild('tdsTable', { static: false })
   tdsTable!: ElementRef<HTMLTableElement>;
+
   userName1 = localStorage.getItem('name') ?? '';
 
   statements: Statement[] = [];
@@ -109,7 +110,12 @@ export class HomePage implements OnInit, OnDestroy {
   pensionStatus = '';
   currentLang: string;
   hasNewNotification = false;
+
+  // Existing flag used for enabling/disabling navigation
   isLivenessEnabled = false;
+
+  // ✅ NEW: if livelinessStatus is "Valid" => hide button
+  isLivelinessValid = false;
 
   banners: any[] = [];
   currentIndex = 0;
@@ -138,13 +144,8 @@ export class HomePage implements OnInit, OnDestroy {
     addIcons({ heart, calendar, musicalNote, notifications });
   }
 
-  // We rely on ionViewWillEnter so we don't double-fetch on first load.
   ngOnInit() {}
 
-  /**
-   * Fires EVERY TIME the view is about to enter, including the first time.
-   * This ensures data refreshes when navigating back to Home without a full reload.
-   */
   ionViewWillEnter() {
     this.onEnter();
   }
@@ -272,25 +273,26 @@ export class HomePage implements OnInit, OnDestroy {
       localStorage.getItem('pentionStatus'); // legacy key fallback
 
     const pensionStatus = rawStatus
-      ? rawStatus.replace(/['"]/g, '').trim().padStart(2, '0') // normalize "3" -> "03"
+      ? rawStatus.replace(/['"]/g, '').trim().padStart(2, '0')
       : '';
+
+    // Reset flags each time
+    this.isLivelinessValid = false;
+    this.isLivenessEnabled = false;
 
     if (pensionStatus === '03') {
       this.livelinessMessage =
         'Your Pension account is suspended. Please contact NPPF admin';
-      this.isLivenessEnabled = false;
       return;
     }
     if (pensionStatus === '01') {
       this.livelinessMessage =
         'Your Pension account is pending. Please contact NPPF admin';
-      this.isLivenessEnabled = false;
       return;
     }
     if (pensionStatus === '04') {
       this.livelinessMessage =
         'Your Pension account is ceased. Please contact NPPF admin';
-      this.isLivenessEnabled = false;
       return;
     }
 
@@ -302,9 +304,30 @@ export class HomePage implements OnInit, OnDestroy {
         if (!res?.status || !res.data) {
           this.livelinessMessage = 'Liveliness test status unavailable.';
           this.isLivenessEnabled = false;
+          this.isLivelinessValid = false;
           return;
         }
 
+        // ✅ 1) Hide button when livelinessStatus is "Valid"
+        const livStatus = (res.data.livelinessStatus ?? '')
+          .toString()
+          .trim()
+          .toLowerCase();
+
+        this.isLivelinessValid = livStatus === 'valid';
+
+        if (this.isLivelinessValid) {
+          const validityDate = new Date(res.data.validity);
+          this.livelinessMessage = Number.isNaN(validityDate.getTime())
+            ? 'Liveliness status: Valid.'
+            : `Liveliness status: Valid until ${this.formatMonthDayYear(
+                validityDate
+              )}.`;
+          this.isLivenessEnabled = false; // also disable navigation
+          return;
+        }
+
+        // ✅ 2) If NOT valid, then use your existing window logic
         const now = new Date();
         const start = new Date(res.data.testStartDate);
         const end = new Date(res.data.testEndDate);
@@ -345,22 +368,23 @@ export class HomePage implements OnInit, OnDestroy {
             ? err.error
             : 'Could not fetch liveliness test status.');
         this.isLivenessEnabled = false;
+        this.isLivelinessValid = false;
       },
     });
   }
 
   private formatMonthDay(d: Date): string {
-    // Example: "December 1"
     return d.toLocaleDateString(undefined, { month: 'long', day: 'numeric' });
   }
+
   private formatMonthDayYear(d: Date): string {
-    // Example: "December 1, 2025"
     return d.toLocaleDateString(undefined, {
       month: 'long',
       day: 'numeric',
       year: 'numeric',
     });
   }
+
   private daysCeil(from: Date, to: Date): number {
     const msPerDay = 1000 * 60 * 60 * 24;
     return Math.max(0, Math.ceil((to.getTime() - from.getTime()) / msPerDay));
@@ -370,10 +394,7 @@ export class HomePage implements OnInit, OnDestroy {
   // Banners
   // =========================
   convertToUrl(banner: any): string {
-    // const fileName = (banner.resourcePath || '').split('\\').pop();
     const fileName = (banner.resourcePath || '').split('/').pop();
-    console.log(fileName); // loginBg.jpg
-
     const folder =
       (banner.resourceType || '').toLowerCase() === 'image'
         ? 'images'
@@ -386,23 +407,17 @@ export class HomePage implements OnInit, OnDestroy {
       next: (res) => {
         const data: any[] = Array.isArray(res?.data) ? res.data : [];
 
-        // Normalize "yes" values (accepts yes/y/true/1 and booleans)
         const isYes = (v: any) => {
           if (typeof v === 'boolean') return v;
           const s = (v ?? '').toString().trim().toLowerCase();
           return s === 'yes' || s === 'y' || s === 'true' || s === '1';
         };
 
-        // 1) Visible (preferred)
         const visible = data.filter((b) => isYes(b?.displayStatus));
 
-        // 2) Choose source list:
-        //    - If visible banners => use those (up to 4)
-        //    - Else => fallback to ALL banners but take ONLY 1
         const source = visible.length > 0 ? visible : data;
         const maxCount = visible.length > 0 ? 4 : 1;
 
-        // 3) De-duplicate by resourcePath (case-insensitive, trimmed)
         const seen = new Set<string>();
         const dedup = source.filter((b: any) => {
           const key = (b?.resourcePath || '').toLowerCase().trim();
@@ -411,17 +426,14 @@ export class HomePage implements OnInit, OnDestroy {
           return true;
         });
 
-        // 4) Sort by timestamp desc
         const sorted = dedup.sort(
           (a: any, b: any) =>
             new Date(b?.queryTimestamp ?? 0).getTime() -
             new Date(a?.queryTimestamp ?? 0).getTime()
         );
 
-        // 5) Limit count (max 4 normally; fallback shows 1)
         const limited = sorted.slice(0, maxCount);
 
-        // 6) Put images first, then videos
         this.banners = limited.sort((a: any, b: any) => {
           const at = (a?.resourceType || '').toLowerCase();
           const bt = (b?.resourceType || '').toLowerCase();
@@ -430,7 +442,6 @@ export class HomePage implements OnInit, OnDestroy {
           return 0;
         });
 
-        // 7) Set current & autoplay only if we have at least 1
         if (this.banners.length > 0) {
           this.currentIndex = 0;
           this.currentBanner = this.banners[0];

@@ -1,9 +1,10 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnDestroy, OnInit } from '@angular/core';
-import { Router } from '@angular/router';
+import { Component, OnDestroy, OnInit, NgZone } from '@angular/core';
+import { Router, ActivatedRoute } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
-import { LoadingController, ToastController } from '@ionic/angular';
+import { ToastController } from '@ionic/angular';
 import { FormsModule } from '@angular/forms';
+import { Toast as CapToast } from '@capacitor/toast';
 
 import {
   IonContent,
@@ -11,18 +12,10 @@ import {
   IonTitle,
   IonToolbar,
   IonButton,
-  IonSpinner,
   IonList,
   IonButtons,
   IonBackButton,
 } from '@ionic/angular/standalone';
-
-import {
-  wsconnect,
-  nkeyAuthenticator,
-  type Subscription,
-  type NatsConnection,
-} from '@nats-io/nats-core';
 
 import { QRCodeComponent } from 'angularx-qrcode';
 import { TranslateModule } from '@ngx-translate/core';
@@ -34,11 +27,15 @@ import { Capacitor, CapacitorHttp, HttpResponse } from '@capacitor/core';
 import { App } from '@capacitor/app';
 
 interface ProofReply {
-  data: {
-    proofRequestURL: string;
-    deepLinkURL: string; // from backend (currently missing returnUrl)
-    proofRequestThreadId: string;
-  };
+  data: any;
+}
+
+interface WebhookDetailsReply {
+  threadId: string;
+  webhookId: string;
+  webhookUrl: string;
+  verificationResult?: string;
+  revealedAttrs?: string; // JSON string from backend
 }
 
 @Component({
@@ -50,7 +47,6 @@ interface ProofReply {
     IonBackButton,
     IonButtons,
     IonList,
-    IonSpinner,
     IonButton,
     IonContent,
     IonHeader,
@@ -63,211 +59,381 @@ interface ProofReply {
   ],
 })
 export class LivenessPage implements OnInit, OnDestroy {
-  step: 'welcome' | 'qr' = 'welcome';
-  loading = false;
+  denied = false;
+
   proofRequestUrl = '';
   deeplink = '';
-  denied = false;
 
   private readonly isNative = Capacitor.isNativePlatform();
 
-  private natsSub?: Subscription;
-  private conn?: NatsConnection;
+  // Must match your Android/iOS scheme
+  private readonly returnUrl = 'ngayoe://';
+
+  // Webhook config
+  private readonly WEBHOOK_ID = 'finalpensionwebhook';
 
   private currentThreadId: string | null = null;
-  private connecting = false;
 
-  // ✅ MUST match your native URL scheme AND what wallet should callback with
-  private readonly returnUrl = 'ngayoe://';
+  // Polling controls
+  private polling = false;
+  private pollStopAt = 0;
+  private pollTimer: any = null;
+
+  // For safety: queue messages until view is entered
+  private viewReady = false;
+  private pendingToasts: { msg: string; color: 'success' | 'danger' }[] = [];
 
   constructor(
     private http: HttpClient,
     private router: Router,
+    private route: ActivatedRoute,
     private toast: ToastController,
-    private loadingCtrl: LoadingController
+    private zone: NgZone
   ) {}
 
   ngOnInit(): void {
-    sessionStorage.clear();
+    console.log('[NDI][LIVENESS] ngOnInit isNative=', this.isNative);
 
-    if (this.isNative) {
-      App.addListener('appStateChange', async ({ isActive }) => {
-        if (isActive) {
-          console.log('🔁 App resumed. Reconnect + resubscribe…');
-          await this.ensureNatsSubscription();
-        } else {
-          console.log('⏸ App backgrounded. (WebSocket likely paused by OS)');
-          // Don’t force close here; just reconnect on resume.
-          // If you close here, you guarantee you’ll miss messages.
-          this.cleanupNats(false);
-        }
-      });
+    // If navigated with ?resume=1 (from AppComponent deep link callback)
+    this.route.queryParams.subscribe((qp) => {
+      console.log('[NDI][LIVENESS] queryParams:', qp);
+      if (qp && qp['resume']) {
+        console.log('[NDI][LIVENESS] resume=1 detected -> onWalletReturn()');
+        this.onWalletReturn();
+      }
+    });
+
+    this.resumeIfNeeded();
+
+    // Auto-start if nothing saved
+    if (!this.currentThreadId) {
+      this.startLogin();
+    }
+  }
+
+  ionViewWillEnter() {
+    console.log('[NDI][LIVENESS] ionViewWillEnter()');
+    this.resumeIfNeeded();
+  }
+
+  ionViewDidEnter() {
+    console.log('[NDI][LIVENESS] ionViewDidEnter()');
+    this.viewReady = true;
+
+    // Flush queued toasts
+    if (this.pendingToasts.length) {
+      const items = [...this.pendingToasts];
+      this.pendingToasts = [];
+      items.reduce(async (p, t) => {
+        await p;
+        await this.toastMessage(t.msg, t.color);
+      }, Promise.resolve());
     }
   }
 
   ngOnDestroy(): void {
-    this.cleanupNats(true);
+    console.log('[NDI][LIVENESS] ngOnDestroy() stopping polling');
+    this.stopPolling();
+  }
+
+  /* ───────────────────────── UI ACTIONS ───────────────────────── */
+
+  openVideoGuide() {
+    window.open('https://www.youtube.com/@BhutanNDI', '_blank');
   }
 
   async startLogin(): Promise<void> {
-    this.step = 'qr';
+    console.log('[NDI][LIVENESS] startLogin()');
+
+    localStorage.setItem('ndi_flow', 'liveness');
+
+    this.denied = false;
+    this.proofRequestUrl = '';
+    this.deeplink = '';
+    this.currentThreadId = null;
+
+    localStorage.removeItem('ndi_threadId');
+    localStorage.removeItem('ndi_deeplink');
+
     await this.requestProof();
   }
 
-  /** ✅ Ensure returnUrl is included in the Branch deep link */
-  private buildNdiDeepLink(branchBase: string): string {
-    if (!branchBase) return branchBase;
+  async openDeeplink(): Promise<void> {
+    console.log('[NDI] openDeeplink() clicked');
 
-    // If already has returnUrl, keep it
-    if (branchBase.toLowerCase().includes('returnurl=')) return branchBase;
+    if (!this.deeplink) {
+      console.warn('[NDI] openDeeplink() no deeplink found');
+      await this.toastMessage(
+        'Deeplink not ready. Please refresh QR.',
+        'danger'
+      );
+      return;
+    }
 
-    const join = branchBase.includes('?') ? '&' : '?';
-    return `${branchBase}${join}returnUrl=${encodeURIComponent(
-      this.returnUrl
-    )}`;
+    // IMPORTANT: subscribe BEFORE going to wallet
+    const threadId = localStorage.getItem('ndi_threadId');
+    if (!threadId) {
+      console.warn('[NDI] openDeeplink() missing threadId in storage');
+      await this.toastMessage('ThreadId missing. Please try again.', 'danger');
+      return;
+    }
+
+    console.log('[NDI] openDeeplink() threadId=', threadId);
+
+    const ok = await this.prepareWebhook(threadId);
+    console.log('[NDI] openDeeplink() prepareWebhook ok=', ok);
+
+    // Optional: show message before switching apps (native toast shows reliably)
+    await this.toastMessage('Opening Bhutan NDI Wallet...', 'success');
+
+    console.log(
+      '[NDI] openDeeplink() launching wallet deeplink:',
+      this.deeplink
+    );
+
+    // On native devices, sometimes a tiny delay helps overlays/flush logs
+    if (this.isNative) await this.sleep(200);
+
+    window.location.href = this.deeplink;
+  }
+
+  async tryAgain(): Promise<void> {
+    console.log('[NDI][LIVENESS] tryAgain()');
+    await this.startLogin();
+  }
+
+  /* ───────────────────────── RESUME / WALLET RETURN ───────────────────────── */
+
+  private resumeIfNeeded() {
+    const savedThread = localStorage.getItem('ndi_threadId');
+    const savedLink = localStorage.getItem('ndi_deeplink');
+
+    console.log('[NDI][LIVENESS] resumeIfNeeded savedThread=', savedThread);
+    console.log('[NDI][LIVENESS] resumeIfNeeded savedLink=', savedLink);
+
+    if (savedLink && !this.deeplink) this.deeplink = savedLink;
+    if (savedThread) this.currentThreadId = savedThread;
+  }
+
+  /** Called when wallet returns to app (ngayoe://...) */
+  private async onWalletReturn(): Promise<void> {
+    console.log('[NDI][LIVENESS] onWalletReturn()');
+
+    const threadId =
+      this.currentThreadId || localStorage.getItem('ndi_threadId');
+    if (!threadId) {
+      console.warn('[NDI][LIVENESS] onWalletReturn() no threadId');
+      return;
+    }
+
+    // safe to call again
+    await this.prepareWebhook(threadId);
+
+    console.log('[NDI][LIVENESS] start polling...');
+    this.startPollingWebhookDetails(threadId);
+  }
+
+  /* ───────────────────────── PROOF REQUEST ───────────────────────── */
+
+  private buildNdiDeepLink(base: string): string {
+    if (!base) return base;
+    if (base.toLowerCase().includes('returnurl=')) return base;
+    const join = base.includes('?') ? '&' : '?';
+    return `${base}${join}returnUrl=${encodeURIComponent(this.returnUrl)}`;
+  }
+
+  private extractProofData(resp: any): {
+    threadId: string;
+    proofUrl: string;
+    deepLink: string;
+  } {
+    const d = resp?.data ?? resp;
+
+    const threadId = d?.proofRequestThreadId;
+    const proofUrl = d?.proofRequestURL;
+    const deepLink = d?.deepLinkURL;
+
+    if (!threadId || !proofUrl || !deepLink) {
+      throw new Error('Invalid proof-request response (missing fields)');
+    }
+
+    return { threadId, proofUrl, deepLink };
   }
 
   private async requestProof(): Promise<void> {
-    this.loading = true;
-    this.denied = false;
+    console.log('[NDI][LIVENESS] requestProof()');
 
-    // You can also pass returnUrl to backend if it supports it:
     const base = 'https://pensionapp.nppf.org.bt/ndi/proof-request-liveness';
     const url = `${base}?returnUrl=${encodeURIComponent(this.returnUrl)}`;
 
     try {
-      console.log(this.isNative ? '🔍 [Native] GET:' : '🔍 [Web] GET:', url);
+      console.log('[NDI][LIVENESS] GET:', url);
 
       const response = await this.getJson<ProofReply>(url);
-      console.log('✅ Proof-request response:', response);
+      console.log('[NDI][LIVENESS] response:', response);
 
-      if (!response?.data) throw new Error('No proof reply data');
+      const { threadId, proofUrl, deepLink } = this.extractProofData(response);
 
-      this.proofRequestUrl = response.data.proofRequestURL;
-      this.currentThreadId = response.data.proofRequestThreadId;
+      this.proofRequestUrl = proofUrl;
+      this.deeplink = this.buildNdiDeepLink(deepLink);
+      this.currentThreadId = threadId;
 
-      // ✅ force returnUrl into deepLink for wallet callback
-      this.deeplink = this.buildNdiDeepLink(response.data.deepLinkURL);
+      localStorage.setItem('ndi_threadId', threadId);
+      localStorage.setItem('ndi_deeplink', this.deeplink);
 
-      // Connect and listen now (best effort)
-      await this.ensureNatsSubscription();
+      console.log('[NDI][LIVENESS] saved threadId:', threadId);
+      console.log('[NDI][LIVENESS] saved deeplink:', this.deeplink);
+
+      // Prepare webhook immediately
+      await this.prepareWebhook(threadId);
+
+      await this.toastMessage(
+        'Proof request ready. Open Bhutan NDI Wallet.',
+        'success'
+      );
     } catch (e: any) {
-      console.error('❌ proof-request failed:', e);
+      console.error('[NDI][LIVENESS] ❌ requestProof failed:', e);
       await this.toastMessage(
-        e?.message?.includes('Unknown Error')
-          ? 'Network/SSL issue. Please try again.'
-          : 'Failed to obtain proof-request',
+        e?.message || 'Failed to obtain proof-request',
         'danger'
       );
-      this.step = 'welcome';
-    } finally {
-      this.loading = false;
     }
   }
 
-  private async ensureNatsSubscription(): Promise<void> {
-    if (!this.currentThreadId) return;
-    if (this.connecting) return;
+  /* ───────────────────────── WEBHOOK FLOW ───────────────────────── */
 
-    // If already connected/subscribed, do nothing
-    if (this.conn && this.natsSub) return;
-
-    this.connecting = true;
-
+  private async prepareWebhook(threadId: string): Promise<boolean> {
     try {
-      console.log('🔌 Connecting to NATS WS…');
+      console.log('[NDI][LIVENESS] prepareWebhook() threadId=', threadId);
 
-      const seed = new TextEncoder().encode(
-        'SUAAEALJWZG6NZ2BA3SYNNBT7A3V6UPCBLZMKW43MKFOBWCLY72SMETJQM'
-      );
+      // 1) Subscribe
+      const subUrl = `https://pensionapp.nppf.org.bt/ndi/webhook/subscribe`;
+      const subBody = {
+        webhookId: this.WEBHOOK_ID,
+        threadId: threadId,
+      };
 
-      this.conn = await wsconnect({
-        servers: 'wss://ndi.nppf.org.bt:8443',
-        authenticator: nkeyAuthenticator(seed),
-      });
+      console.log('[NDI][LIVENESS] POST subscribe:', subUrl, subBody);
+      const subResp = await this.postJson<any>(subUrl, subBody);
+      console.log('[NDI][LIVENESS] POST subscribe response:', subResp);
 
-      this.conn.closed().then((err: any) => {
-        console.log('🔚 NATS closed. err=', err);
-        // allow resume to reconnect
-        this.cleanupNats(false);
-      });
+      // 2) PUT webhook details
+      const putUrl = `https://pensionapp.nppf.org.bt/ndi/webhook-details/${encodeURIComponent(
+        threadId
+      )}`;
+      const putBody = {
+        webhookId: this.WEBHOOK_ID,
+        webhookUrl: 'https://pensionapp.nppf.org.bt/ndi/webhook',
+        authType: 'OAuth2',
+        authVersion: 'v2',
+        authTokenMode: 'url',
+        registerResponse: '{ "statusCode": 201 }',
+        subscribeResponse: '{ "statusCode": 200, "message": "Subscribed" }',
+      };
 
-      this.natsSub = this.conn.subscribe(this.currentThreadId);
-      console.log('📡 Subscribed to thread:', this.currentThreadId);
+      console.log('[NDI][LIVENESS] PUT details:', putUrl, putBody);
+      const putResp = await this.putJson<any>(putUrl, putBody);
+      console.log('[NDI][LIVENESS] PUT details response:', putResp);
 
-      this.startNatsLoop();
-    } catch (err) {
-      console.error('❌ NATS connect error:', err);
-      await this.toastMessage(
-        'NATS connection failed on mobile. Please try again.',
-        'danger'
-      );
-      this.cleanupNats(false);
-    } finally {
-      this.connecting = false;
+      return true;
+    } catch (e) {
+      console.error('[NDI][LIVENESS] ❌ prepareWebhook failed:', e);
+      return false;
     }
   }
 
-  private startNatsLoop(): void {
-    if (!this.natsSub) return;
+  private startPollingWebhookDetails(threadId: string) {
+    if (this.polling) {
+      console.log('[NDI][LIVENESS] polling already running');
+      return;
+    }
 
-    (async () => {
-      try {
-        for await (const m of this.natsSub!) {
-          let msg: any;
-          try {
-            msg = m.json<any>();
-          } catch {
-            msg = JSON.parse(m.string());
-          }
+    this.polling = true;
+    this.pollStopAt = Date.now() + 60_000;
 
-          console.log('🧾 Parsed NATS message:', msg);
+    const tick = async () => {
+      if (!this.polling) return;
 
-          if (msg?.data?.type === 'present-proof/rejected') {
-            console.log('🚫 Proof rejected');
-            this.denied = true;
-            continue;
-          }
-
-          if (msg?.data?.type === 'present-proof/presentation-result') {
-            const cid =
-              msg.data?.requested_presentation?.revealed_attrs?.[
-                'ID Number'
-              ]?.[0]?.value;
-
-            console.log('✅ Proof result CID:', cid);
-
-            if (!cid) continue;
-
-            await this.checkLiveliness(cid);
-
-            // cleanup after success
-            this.cleanupNats(true);
-            break;
-          }
-        }
-      } catch (e) {
-        console.error('❌ Error inside NATS loop:', e);
-        this.cleanupNats(false);
+      if (Date.now() > this.pollStopAt) {
+        console.warn('[NDI][LIVENESS] polling timeout');
+        this.stopPolling();
+        await this.toastMessage(
+          'Verification timeout. Please try again.',
+          'danger'
+        );
+        return;
       }
-    })().catch(console.error);
+
+      const done = await this.tryFetchWebhookDetails(threadId);
+      if (done) {
+        this.stopPolling();
+        return;
+      }
+
+      this.pollTimer = setTimeout(tick, 2000);
+    };
+
+    tick();
   }
 
-  private cleanupNats(closeConn: boolean = true): void {
-    try {
-      this.natsSub?.unsubscribe();
-    } catch {}
-    this.natsSub = undefined;
-
-    if (closeConn) {
-      try {
-        this.conn?.close();
-      } catch {}
-      this.conn = undefined;
-    } else {
-      this.conn = undefined;
+  private stopPolling() {
+    this.polling = false;
+    if (this.pollTimer) {
+      clearTimeout(this.pollTimer);
+      this.pollTimer = null;
     }
   }
+
+  private async tryFetchWebhookDetails(threadId: string): Promise<boolean> {
+    try {
+      const url = `https://pensionapp.nppf.org.bt/ndi/webhook-details/${encodeURIComponent(
+        threadId
+      )}`;
+      console.log('[NDI][LIVENESS] GET webhook-details:', url);
+
+      const res = await this.getJson<WebhookDetailsReply>(url);
+      console.log('[NDI][LIVENESS] webhook-details response:', res);
+
+      if (!res) return false;
+
+      if (res.verificationResult?.toLowerCase().includes('reject')) {
+        this.denied = true;
+        await this.toastMessage('Access denied in wallet.', 'danger');
+        return true;
+      }
+
+      if (res.verificationResult !== 'ProofValidated') return false;
+
+      const cid = this.extractCidFromRevealedAttrs(res.revealedAttrs);
+      if (!cid) return false;
+
+      console.log('[NDI][LIVENESS] ✅ CID -> checkLiveliness:', cid);
+
+      await this.checkLiveliness(cid);
+
+      localStorage.removeItem('ndi_threadId');
+      localStorage.removeItem('ndi_deeplink');
+
+      return true;
+    } catch (e) {
+      console.error('[NDI][LIVENESS] ❌ tryFetchWebhookDetails failed:', e);
+      return false;
+    }
+  }
+
+  private extractCidFromRevealedAttrs(revealedAttrs?: string): string | null {
+    if (!revealedAttrs) return null;
+    try {
+      const obj = JSON.parse(revealedAttrs);
+      const cid = obj?.['ID Number']?.[0]?.value;
+      return cid ? String(cid).trim() : null;
+    } catch (e) {
+      console.error('[NDI][LIVENESS] JSON parse failed:', e);
+      return null;
+    }
+  }
+
+  /* ───────────────────────── LIVELINESS CHECK ───────────────────────── */
 
   private async checkLiveliness(cid: string): Promise<void> {
     const storedCid = localStorage.getItem('cidNumber');
@@ -276,16 +442,10 @@ export class LivenessPage implements OnInit, OnDestroy {
     const livelinessStatus =
       storedCid && storedCid !== cid ? 'Invalid' : 'Valid';
 
-    let spin: HTMLIonLoadingElement | undefined;
-    try {
-      spin = await this.loadingCtrl.create({
-        message: 'Verifying Liveliness…',
-      });
-      await spin.present();
-    } catch {}
-
     const url = `https://pensionapp.nppf.org.bt/api/liveliness`;
     const payload = { pensionId, cidNumber: cid, livelinessStatus };
+
+    console.log('[NDI][LIVENESS] POST liveliness:', url, payload);
 
     try {
       const response: any = await this.postJson<any>(url, payload);
@@ -295,19 +455,17 @@ export class LivenessPage implements OnInit, OnDestroy {
         response?.status === 'true' ||
         response?.status === 1;
 
-      try {
-        await spin?.dismiss();
-      } catch {}
-
       if (statusOk && livelinessStatus === 'Valid') {
         await this.toastMessage('Liveliness verified successfully', 'success');
-        this.finaliseLogin(cid);
+
+        this.zone.run(() => {
+          this.router.navigate(['/home'], { replaceUrl: true });
+        });
         return;
       }
 
       if (livelinessStatus === 'Invalid') {
         await this.toastMessage('CID mismatched. Please try again.', 'danger');
-        this.step = 'welcome';
         return;
       }
 
@@ -315,84 +473,179 @@ export class LivenessPage implements OnInit, OnDestroy {
         response?.message || 'Liveliness verification failed.',
         'danger'
       );
-      this.step = 'welcome';
     } catch (e: any) {
-      try {
-        await spin?.dismiss();
-      } catch {}
+      console.error('[NDI][LIVENESS] checkLiveliness failed:', e);
       await this.toastMessage(
         e?.error?.message || e?.message || 'Server error. Try again later.',
         'danger'
       );
-      this.step = 'welcome';
     }
   }
 
-  private finaliseLogin(cid: string): void {
-    localStorage.setItem('cidNumber', cid);
-    this.router.navigate(['/home'], { replaceUrl: true });
-  }
+  /* ───────────────────────── ✅ TOAST (APK SAFE) ───────────────────────── */
 
   async toastMessage(msg: string, color: 'success' | 'danger'): Promise<void> {
-    const t = await this.toast.create({ message: msg, duration: 3000, color });
-    await t.present();
+    // queue if view not ready yet
+    if (!this.viewReady) {
+      this.pendingToasts.push({ msg, color });
+      return;
+    }
+
+    // Always run inside Angular zone
+    return await this.zone.run(async () => {
+      // ✅ Native (APK) => use Capacitor Toast (most reliable)
+      if (this.isNative) {
+        try {
+          await CapToast.show({
+            text: msg,
+            duration: 'short',
+            position: 'top',
+          });
+          return;
+        } catch (e) {
+          console.error('[TOAST] CapToast failed, fallback to Ionic', e);
+          // fall through to Ionic
+        }
+      }
+
+      // ✅ Web (or fallback) => Ionic ToastController
+      try {
+        const t = await this.toast.create({
+          message: msg,
+          duration: 3500,
+          color,
+          position: 'top',
+        });
+        await t.present();
+      } catch (e) {
+        console.error('[TOAST] Ionic toast failed', e);
+      }
+    });
   }
 
-  openDeeplink(): void {
-    // Works for Branch universal links in Capacitor
-    window.location.href = this.deeplink || '';
+  private sleep(ms: number) {
+    return new Promise((r) => setTimeout(r, ms));
   }
 
-  async tryAgain(): Promise<void> {
-    this.denied = false;
-    await this.requestProof();
-  }
+  /* ───────────────────────── HTTP HELPERS (WITH HARD TIMEOUTS) ───────────────────────── */
 
-  openVideoGuide() {
-    window.open('https://www.youtube.com/@BhutanNDI', '_blank');
+  private async withHardTimeout<T>(
+    p: Promise<T>,
+    ms: number,
+    label: string
+  ): Promise<T> {
+    let timer: any;
+    const timeoutPromise = new Promise<T>((_, rej) => {
+      timer = setTimeout(() => {
+        rej(
+          new Error(`[NDI][LIVENESS] HARD TIMEOUT after ${ms}ms at ${label}`)
+        );
+      }, ms);
+    });
+
+    try {
+      return await Promise.race([p, timeoutPromise]);
+    } finally {
+      clearTimeout(timer);
+    }
   }
 
   private async getJson<T>(url: string): Promise<T> {
     if (this.isNative) {
-      const res: HttpResponse = await CapacitorHttp.get({
-        url,
-        connectTimeout: 15000,
-        readTimeout: 15000,
-      });
+      const req = (async () => {
+        const res: HttpResponse = await CapacitorHttp.get({
+          url,
+          headers: { Accept: 'application/json' },
+          connectTimeout: 20000,
+          readTimeout: 20000,
+        });
 
-      let data: any = res.data;
-      if (typeof data === 'string') {
-        try {
-          data = JSON.parse(data);
-        } catch {}
-      }
-      return (data ?? {}) as T;
+        if (res.status && res.status >= 400) {
+          throw new Error(`HTTP ${res.status} for GET ${url}`);
+        }
+
+        let data: any = res.data;
+        if (typeof data === 'string') {
+          try {
+            data = JSON.parse(data);
+          } catch {}
+        }
+        return (data ?? {}) as T;
+      })();
+
+      return await this.withHardTimeout(req, 25000, `GET ${url}`);
     }
 
-    return await firstValueFrom(this.http.get<T>(url).pipe(timeout(12000)));
+    return await firstValueFrom(this.http.get<T>(url).pipe(timeout(20000)));
   }
 
   private async postJson<T>(url: string, body: any): Promise<T> {
     if (this.isNative) {
-      const res: HttpResponse = await CapacitorHttp.post({
-        url,
-        data: body,
-        headers: { 'Content-Type': 'application/json' },
-        connectTimeout: 15000,
-        readTimeout: 15000,
-      });
+      const req = (async () => {
+        const res: HttpResponse = await CapacitorHttp.post({
+          url,
+          headers: {
+            'Content-Type': 'application/json',
+            Accept: 'application/json',
+          },
+          data: body,
+          connectTimeout: 20000,
+          readTimeout: 20000,
+        });
 
-      let data: any = res.data;
-      if (typeof data === 'string') {
-        try {
-          data = JSON.parse(data);
-        } catch {}
-      }
-      return (data ?? {}) as T;
+        if (res.status && res.status >= 400) {
+          throw new Error(`HTTP ${res.status} for POST ${url}`);
+        }
+
+        let data: any = res.data;
+        if (typeof data === 'string') {
+          try {
+            data = JSON.parse(data);
+          } catch {}
+        }
+        return (data ?? {}) as T;
+      })();
+
+      return await this.withHardTimeout(req, 25000, `POST ${url}`);
     }
 
     return await firstValueFrom(
-      this.http.post<T>(url, body).pipe(timeout(12000))
+      this.http.post<T>(url, body).pipe(timeout(20000))
+    );
+  }
+
+  private async putJson<T>(url: string, body: any): Promise<T> {
+    if (this.isNative) {
+      const req = (async () => {
+        const res: HttpResponse = await CapacitorHttp.put({
+          url,
+          headers: {
+            'Content-Type': 'application/json',
+            Accept: 'application/json',
+          },
+          data: body,
+          connectTimeout: 20000,
+          readTimeout: 20000,
+        });
+
+        if (res.status && res.status >= 400) {
+          throw new Error(`HTTP ${res.status} for PUT ${url}`);
+        }
+
+        let data: any = res.data;
+        if (typeof data === 'string') {
+          try {
+            data = JSON.parse(data);
+          } catch {}
+        }
+        return (data ?? {}) as T;
+      })();
+
+      return await this.withHardTimeout(req, 25000, `PUT ${url}`);
+    }
+
+    return await firstValueFrom(
+      this.http.put<T>(url, body).pipe(timeout(20000))
     );
   }
 }

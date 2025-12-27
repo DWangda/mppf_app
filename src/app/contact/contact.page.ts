@@ -43,7 +43,7 @@ export class ContactPage implements OnInit {
   ngOnInit() {}
 
   makeCall() {
-    window.location.href = 'tel:1009';
+    window.location.href = 'tel:1039';
   }
   sendEmail() {
     window.location.href = 'mailto:CSU.Head@nppf.org.bt';

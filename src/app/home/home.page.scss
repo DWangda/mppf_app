@@ -187,13 +187,13 @@ ion-header {
 .title {
   border-bottom: #5bd1d7;
   background: #fff;
-  padding-top: 30px;
+  padding-top: 59px;
   --box-shadow: none;
 }
 .menu-header {
   color: black;
   margin-top: 0px;
-  margin-left: 12px;
+  margin-left: 20px;
 }
 ///////
 ///
@@ -313,6 +313,7 @@ ion-content {
     margin-bottom: 15px;
     // justify-content: center;
     padding: 8px;
+    padding-left: 20px;
     gap: 10px;
     img {
       width: 34px;

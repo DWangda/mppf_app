@@ -62,6 +62,7 @@ import { IonApp, IonRouterOutlet } from '@ionic/angular/standalone';
 import { SplashComponent } from './components/splash/splash.component';
 import { Router } from '@angular/router';
 
+import { Capacitor } from '@capacitor/core';
 import { App as CapApp } from '@capacitor/app';
 
 @Component({
@@ -74,12 +75,12 @@ export class AppComponent {
   webSplash = true;
   hasLoadedSplash = false;
 
+  private readonly isNative = Capacitor.isNativePlatform();
+
   constructor(private router: Router, private zone: NgZone) {
     this.initSplash();
     this.initDeepLinkCallbacks();
   }
-
-  ngOnInit() {}
 
   private initSplash() {
     const alreadyShown = localStorage.getItem('hasLoadedSplash');
@@ -94,7 +95,11 @@ export class AppComponent {
       this.webSplash = false;
     }
   }
+
   private async initDeepLinkCallbacks() {
+    // ✅ Only do this on native (Android/iOS)
+    if (!this.isNative) return;
+
     // Cold start
     const launch = await CapApp.getLaunchUrl();
     if (launch?.url) this.handleCallbackUrl(launch.url);
@@ -106,21 +111,25 @@ export class AppComponent {
   }
 
   private handleCallbackUrl(url: string) {
-    console.log('🔙 Callback URL received:', url);
+    console.log('[NDI][APP] 🔙 Callback URL received:', url);
 
     const lowered = (url || '').toLowerCase();
-
-    // Must match your scheme
     if (!lowered.startsWith('ngayoe://')) return;
 
-    console.log('📌 Saved threadId:', localStorage.getItem('ndi_threadId'));
-    console.log(
-      '📌 Saved deeplink exists:',
-      !!localStorage.getItem('ndi_deeplink')
-    );
+    const flow = localStorage.getItem('ndi_flow') || 'login'; // "login" | "liveness"
+    const threadId = localStorage.getItem('ndi_threadId');
+
+    console.log('[NDI][APP] ✅ flow=', flow);
+    console.log('[NDI][APP] ✅ threadId=', threadId);
 
     this.zone.run(() => {
-      this.router.navigate(['/ndi-login'], { queryParams: { resume: 1 } });
+      if (flow === 'liveness') {
+        console.log('[NDI][APP] ➜ navigating /liveness?resume=1');
+        this.router.navigate(['/liveness'], { queryParams: { resume: 1 } });
+      } else {
+        console.log('[NDI][APP] ➜ navigating /ndi-login?resume=1');
+        this.router.navigate(['/ndi-login'], { queryParams: { resume: 1 } });
+      }
     });
   }
 }
