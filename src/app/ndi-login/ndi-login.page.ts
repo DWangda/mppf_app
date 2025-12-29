@@ -19,8 +19,9 @@ import { LanguageToggleComponent } from '../shared/language-toggle.component';
 import { firstValueFrom } from 'rxjs';
 import { timeout } from 'rxjs/operators';
 
-// Capacitor HTTP
+// ✅ Capacitor HTTP + Toast
 import { Capacitor, CapacitorHttp, HttpResponse } from '@capacitor/core';
+import { Toast as CapToast } from '@capacitor/toast';
 
 interface ProofReply {
   data: {
@@ -90,6 +91,13 @@ export class NdiLoginPage implements OnInit, OnDestroy {
   // Webhook config
   private readonly WEBHOOK_ID = 'finalpensionwebhook';
 
+  // ✅ same lock pattern as old login
+  private loggingIn = false;
+
+  // ✅ Toast safety (same as liveness)
+  private viewReady = false;
+  private pendingToasts: { msg: string; color: 'success' | 'danger' }[] = [];
+
   constructor(
     private http: HttpClient,
     private router: Router,
@@ -101,7 +109,6 @@ export class NdiLoginPage implements OnInit, OnDestroy {
   ngOnInit(): void {
     console.log('[NDI] ngOnInit()');
 
-    // If navigated with ?resume=1 (from AppComponent deep link callback)
     this.route.queryParams.subscribe((qp) => {
       console.log('[NDI] queryParams:', qp);
       if (qp && qp['resume']) {
@@ -116,6 +123,21 @@ export class NdiLoginPage implements OnInit, OnDestroy {
   ionViewWillEnter() {
     console.log('[NDI] ionViewWillEnter()');
     this.resumeIfNeeded();
+  }
+
+  ionViewDidEnter() {
+    console.log('[NDI] ionViewDidEnter()');
+    this.viewReady = true;
+
+    // Flush queued toasts
+    if (this.pendingToasts.length) {
+      const items = [...this.pendingToasts];
+      this.pendingToasts = [];
+      items.reduce(async (p, t) => {
+        await p;
+        await this.toastMessage(t.msg, t.color);
+      }, Promise.resolve());
+    }
   }
 
   ngOnDestroy(): void {
@@ -151,10 +173,13 @@ export class NdiLoginPage implements OnInit, OnDestroy {
 
     if (!this.deeplink) {
       console.warn('[NDI] openDeeplink() no deeplink found');
+      await this.toastMessage(
+        'Deeplink not ready. Please try again.',
+        'danger'
+      );
       return;
     }
 
-    // IMPORTANT: subscribe BEFORE going to wallet
     const threadId = localStorage.getItem('ndi_threadId');
     if (!threadId) {
       console.warn('[NDI] openDeeplink() missing threadId in storage');
@@ -163,12 +188,13 @@ export class NdiLoginPage implements OnInit, OnDestroy {
     }
 
     console.log('[NDI] openDeeplink() threadId=', threadId);
-    console.log(
-      '[NDI] openDeeplink() preparing webhook subscribe + details...'
-    );
 
     const ok = await this.prepareWebhook(threadId);
     console.log('[NDI] openDeeplink() prepareWebhook ok=', ok);
+
+    await this.toastMessage('Opening Bhutan NDI Wallet...', 'success');
+
+    if (this.isNative) await this.sleep(200);
 
     console.log(
       '[NDI] openDeeplink() launching wallet deeplink:',
@@ -207,11 +233,9 @@ export class NdiLoginPage implements OnInit, OnDestroy {
 
     this.step = 'qr';
 
-    // Ensure webhook is subscribed (safe to call again)
     console.log('[NDI] onWalletReturn() ensure webhook prepared...');
     await this.prepareWebhook(threadId);
 
-    // Poll webhook-details until proof validated
     console.log('[NDI] onWalletReturn() start polling webhook-details...');
     this.startPollingWebhookDetails(threadId);
   }
@@ -240,7 +264,6 @@ export class NdiLoginPage implements OnInit, OnDestroy {
       if (!response?.data) throw new Error('No proof reply data');
 
       this.proofRequestUrl = response.data.proofRequestURL;
-
       this.deeplink = this.buildNdiDeepLink(response.data.deepLinkURL);
 
       localStorage.setItem('ndi_threadId', response.data.proofRequestThreadId);
@@ -252,8 +275,9 @@ export class NdiLoginPage implements OnInit, OnDestroy {
       );
       console.log('[NDI] requestProof() saved deeplink:', this.deeplink);
 
-      // Prepare webhook immediately (so phone is ready before wallet opens)
       await this.prepareWebhook(response.data.proofRequestThreadId);
+
+      await this.toastMessage('QR ready. Open Bhutan NDI Wallet.', 'success');
     } catch (e: any) {
       console.error('[NDI] ❌ requestProof failed:', e);
       await this.toastMessage('Failed to obtain proof-request', 'danger');
@@ -269,18 +293,12 @@ export class NdiLoginPage implements OnInit, OnDestroy {
     try {
       console.log('[NDI] prepareWebhook() threadId=', threadId);
 
-      // 1) Subscribe
       const subUrl = `https://pensionapp.nppf.org.bt/ndi/webhook/subscribe`;
-      const subBody = {
-        webhookId: this.WEBHOOK_ID,
-        threadId: threadId,
-      };
-
+      const subBody = { webhookId: this.WEBHOOK_ID, threadId };
       console.log('[NDI] prepareWebhook() POST subscribe:', subUrl, subBody);
       const subResp = await this.postJson<any>(subUrl, subBody);
       console.log('[NDI] prepareWebhook() POST subscribe response:', subResp);
 
-      // 2) Update webhook details (PUT)
       const putUrl = `https://pensionapp.nppf.org.bt/ndi/webhook-details/${encodeURIComponent(
         threadId
       )}`;
@@ -312,11 +330,7 @@ export class NdiLoginPage implements OnInit, OnDestroy {
     }
 
     this.polling = true;
-    this.pollStopAt = Date.now() + 60_000; // 60 seconds
-    console.log(
-      '[NDI] startPollingWebhookDetails() for 60s threadId=',
-      threadId
-    );
+    this.pollStopAt = Date.now() + 60_000;
 
     const tick = async () => {
       if (!this.polling) return;
@@ -356,16 +370,9 @@ export class NdiLoginPage implements OnInit, OnDestroy {
 
       if (!res) return false;
 
-      // If rejected (optional if your backend indicates)
-      if (
-        res.verificationResult &&
-        res.verificationResult.toLowerCase().includes('reject')
-      ) {
-        console.warn(
-          '[NDI] ❌ verificationResult rejected:',
-          res.verificationResult
-        );
+      if (res.verificationResult?.toLowerCase().includes('reject')) {
         this.denied = true;
+        await this.toastMessage('Access denied in wallet.', 'danger');
         return true;
       }
 
@@ -377,19 +384,17 @@ export class NdiLoginPage implements OnInit, OnDestroy {
         return false;
       }
 
-      // Extract CID from revealedAttrs string
       const cid = this.extractCidFromRevealedAttrs(res.revealedAttrs);
       if (!cid) {
         console.warn('[NDI] ProofValidated but CID not found in revealedAttrs');
         return false;
       }
 
-      console.log('[NDI] ✅ CID found -> checkPensionerApis:', cid);
+      console.log('[NDI] ✅ CID found -> validateCidFromWallet:', cid);
 
-      // Verify pensioner and login
-      await this.checkPensionerApis(cid);
+      // ✅ OLD LOGIN LOGIC HERE (GET -> maybe POST -> login)
+      await this.validateCidFromWallet(cid);
 
-      // cleanup after success path
       localStorage.removeItem('ndi_threadId');
       localStorage.removeItem('ndi_deeplink');
 
@@ -402,14 +407,11 @@ export class NdiLoginPage implements OnInit, OnDestroy {
 
   private extractCidFromRevealedAttrs(revealedAttrs?: string): string | null {
     console.log('[NDI] extractCidFromRevealedAttrs() raw:', revealedAttrs);
-
     if (!revealedAttrs) return null;
 
     try {
-      // revealedAttrs is itself a JSON string
       const obj = JSON.parse(revealedAttrs);
       const cid = obj?.['ID Number']?.[0]?.value;
-
       console.log('[NDI] extractCidFromRevealedAttrs() parsed CID=', cid);
       return cid ? String(cid).trim() : null;
     } catch (e) {
@@ -421,67 +423,97 @@ export class NdiLoginPage implements OnInit, OnDestroy {
     }
   }
 
-  /* ───────────────────────── PENSIONER CHECK ───────────────────────── */
+  /* ───────────────────────── ✅ OLD LOGIN LOGIC (GET -> POST fallback) ───────────────────────── */
 
-  private async checkPensionerApis(cid: string): Promise<void> {
+  private async validateCidFromWallet(cid: string): Promise<void> {
+    if (this.loggingIn) return;
+    this.loggingIn = true;
+
     const getUrl = `https://pensionapp.nppf.org.bt/api/pensioner/${encodeURIComponent(
       cid
     )}`;
-    console.log('[NDI] checkPensionerApis() cid:', cid);
-    console.log('[NDI] checkPensionerApis() GET:', getUrl);
+    const postUrl = 'https://pensionapp.nppf.org.bt/api/pensioner/validate';
 
     try {
-      console.log('[NDI] checkPensionerApis() -> calling getJson...');
-      const getResp: any = await this.getJson<any>(getUrl);
-      console.log('[NDI] checkPensionerApis() <- response:', getResp);
+      console.log(this.isNative ? '🔍 [Native] GET:' : '🔍 [Web] GET:', getUrl);
 
-      const statusOk =
-        getResp?.status === true ||
-        getResp?.status === 'true' ||
-        getResp?.status === 1;
+      const resGet: any = await this.getJson<any>(getUrl);
+      console.log('✅ GET response:', resGet);
 
-      const userStatus = Number(getResp?.data?.userStatus);
+      const statusOk = resGet?.status === true;
+      const userStatus = Number(resGet?.data?.userStatus);
 
-      console.log(
-        '[NDI] checkPensionerApis() statusOk=',
-        statusOk,
-        'userStatus=',
-        userStatus
-      );
-
+      // ✅ Active -> login
       if (statusOk && userStatus === 1) {
-        console.log('[NDI] ✅ Pensioner verified -> finaliseLogin()');
+        console.log('🎉 GET valid -> login');
         this.finaliseLogin(cid);
         return;
       }
 
-      console.warn('[NDI] ❌ User disabled or invalid');
+      // ⛔ Disabled -> stop (no POST)
+      if (statusOk && !Number.isNaN(userStatus) && userStatus !== 1) {
+        await this.toastMessage(
+          'Your account is disabled, please contact NPPF admin',
+          'danger'
+        );
+        this.step = 'welcome';
+        return;
+      }
+
+      // ❗ GET not valid -> try POST fallback
+      console.log('⚠️ GET returned false/invalid -> trying POST validate');
+      await this.hitPostValidate(cid, postUrl);
+    } catch (errGet: any) {
+      console.error('🚫 GET error:', errGet);
+      console.log('🔁 Trying POST fallback');
+      await this.hitPostValidate(cid, postUrl);
+    } finally {
+      this.loggingIn = false;
+    }
+  }
+
+  private async hitPostValidate(cid: string, postUrl: string): Promise<void> {
+    try {
+      console.log(
+        this.isNative ? '📨 [Native] POST:' : '📨 [Web] POST:',
+        postUrl
+      );
+
+      const resPost: any = await this.postJson<any>(postUrl, {
+        cid,
+        cidNumber: cid,
+      });
+
+      console.log('📨 POST response:', resPost);
+
+      if (resPost?.status === true) {
+        console.log('🎉 POST valid -> login');
+        this.finaliseLogin(cid);
+      } else {
+        console.warn('❌ POST failed:', resPost?.message);
+        await this.toastMessage(
+          resPost?.message ?? 'CID validation failed.',
+          'danger'
+        );
+        this.step = 'welcome';
+      }
+    } catch (errPost: any) {
+      console.error('🚫 POST error:', errPost);
+      const msg = errPost?.data?.message || errPost?.message || 'POST failed.';
       await this.toastMessage(
-        'Your User Account has been disabled, Please contact NPPF admin for further assistance.',
+        /Unknown Error|status:\s*0/i.test(String(msg))
+          ? 'Network/SSL issue. Please try again.'
+          : String(msg),
         'danger'
       );
-      this.step = 'welcome';
-    } catch (e: any) {
-      console.error('[NDI] ❌ checkPensionerApis failed:', e);
-
-      const msg =
-        e?.message ||
-        e?.error ||
-        (typeof e === 'string'
-          ? e
-          : 'Unable to verify pensioner (network error).');
-
-      await this.toastMessage(String(msg), 'danger');
       this.step = 'welcome';
     }
   }
 
   private finaliseLogin(cid: string): void {
     console.log('[NDI] finaliseLogin() storing cid and navigating home');
-
     localStorage.setItem('cidNumber', cid);
 
-    // IMPORTANT: ensure navigation happens inside Angular zone (fixes “not navigating” on device)
     this.zone.run(() => {
       console.log('[NDI] router.navigate(home) now...');
       this.router.navigate(['home']).then(
@@ -491,16 +523,44 @@ export class NdiLoginPage implements OnInit, OnDestroy {
     });
   }
 
-  /* ───────────────────────── TOAST ───────────────────────── */
+  /* ───────────────────────── ✅ TOAST (APK SAFE like Liveness) ───────────────────────── */
 
   async toastMessage(msg: string, color: 'success' | 'danger'): Promise<void> {
-    const t = await this.toast.create({
-      message: msg,
-      duration: 3500,
-      color,
-      position: 'top',
+    if (!this.viewReady) {
+      this.pendingToasts.push({ msg, color });
+      return;
+    }
+
+    return await this.zone.run(async () => {
+      if (this.isNative) {
+        try {
+          await CapToast.show({
+            text: msg,
+            duration: 'short',
+            position: 'top',
+          });
+          return;
+        } catch (e) {
+          console.error('[TOAST] CapToast failed, fallback to Ionic', e);
+        }
+      }
+
+      try {
+        const t = await this.toast.create({
+          message: msg,
+          duration: 3500,
+          color,
+          position: 'top',
+        });
+        await t.present();
+      } catch (e) {
+        console.error('[TOAST] Ionic toast failed', e);
+      }
     });
-    t.present();
+  }
+
+  private sleep(ms: number) {
+    return new Promise((r) => setTimeout(r, ms));
   }
 
   /* ───────────────────────── HTTP HELPERS (WITH HARD TIMEOUTS) ───────────────────────── */
@@ -538,7 +598,6 @@ export class NdiLoginPage implements OnInit, OnDestroy {
 
         console.log('[NDI][HTTP][NATIVE] GET status=', res.status);
 
-        // If backend returns non-2xx, treat as error (so you can see it)
         if (res.status && res.status >= 400) {
           console.error(
             '[NDI][HTTP][NATIVE] GET error status:',
@@ -553,9 +612,7 @@ export class NdiLoginPage implements OnInit, OnDestroy {
         if (typeof data === 'string') {
           try {
             data = JSON.parse(data);
-          } catch {
-            // keep as string
-          }
+          } catch {}
         }
         return (data ?? {}) as T;
       })();
